@@ -21,6 +21,12 @@ app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SESSION_SECRET") or 'dev-key-for-testing'
 
+# Log database connection info
+if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+    logging.error("DATABASE_URL environment variable not set - falling back to default configuration")
+else:
+    logging.info(f"Using database: {app.config.get('SQLALCHEMY_DATABASE_URI').split('@')[-1]}")
+
 # Initialize extensions with the app
 db.init_app(app)
 login_manager.init_app(app)
