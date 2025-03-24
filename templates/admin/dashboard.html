@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Daily Cash Collection Report{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">User Statistics</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-blue-800">Total Users</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ user_count }}</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-green-800">Team Leads</h3>
+                <p class="text-3xl font-bold text-green-600">{{ team_lead_count }}</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-purple-800">Data Analysts</h3>
+                <p class="text-3xl font-bold text-purple-600">{{ data_analyst_count }}</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-yellow-800">Cash Controllers</h3>
+                <p class="text-3xl font-bold text-yellow-600">{{ cash_controller_count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">Admin Functions</h2>
+        <nav class="flex flex-col space-y-3">
+            <a href="{{ url_for('auth.register') }}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 flex items-center justify-between">
+                <span>Create New User</span>
+                <i class="fas fa-user-plus"></i>
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700 flex items-center justify-between">
+                <span>Manage Users</span>
+                <i class="fas fa-users-cog"></i>
+            </a>
+            <a href="{{ url_for('admin.manage_flights_supervisors') }}" class="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-700 flex items-center justify-between">
+                <span>Manage Flights & Supervisors</span>
+                <i class="fas fa-plane"></i>
+            </a>
+        </nav>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-lg p-6">
+    <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
+    <p class="text-gray-600">Coming soon - activity tracking and reports</p>
+</div>
+{% endblock %}

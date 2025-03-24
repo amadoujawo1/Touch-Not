@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Register User - Daily Cash Collection Report{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg sm:p-10 md:p-12">
+    <h2 class="text-2xl font-bold text-center mb-6 sm:text-xl md:text-2xl">Register New User (Admin Only)</h2>
+    <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}" class="space-y-6">
+        {{ form.hidden_tag() }}
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 sm:text-base">Username</label>
+            {{ form.username(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Enter your username") }}
+            <p class="text-xs text-gray-500 mt-1 sm:text-sm">Username must be unique.</p>
+            {% if form.username.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.username.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 sm:text-base">Password</label>
+            {{ form.password(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Enter your password") }}
+            <p class="text-xs text-gray-500 mt-1 sm:text-sm">Password must be at least 8 characters, with one uppercase, one lowercase, one number, and one special character.</p>
+            {% if form.password.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.password.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="confirm_password" class="block text-sm font-medium text-gray-700 sm:text-base">Confirm Password</label>
+            {{ form.confirm_password(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Confirm your password") }}
+            {% if form.confirm_password.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.confirm_password.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 sm:text-base">Role</label>
+            {{ form.role(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base") }}
+            {% if form.role.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.role.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="gender" class="block text-sm font-medium text-gray-700 sm:text-base">Gender</label>
+            {{ form.gender(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base") }}
+            {% if form.gender.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.gender.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 sm:text-base">Email</label>
+            {{ form.email(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Enter your email") }}
+            {% if form.email.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.email.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="telephone" class="block text-sm font-medium text-gray-700 sm:text-base">Telephone</label>
+            {{ form.telephone(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Enter your telephone number") }}
+            {% if form.telephone.errors %}
+            <div class="text-red-500 text-sm mt-1">
+                {% for error in form.telephone.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="flex justify-between">
+            {{ form.submit(class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 sm:px-5 sm:py-2 md:px-6 md:py-3") }}
+            
+            <a href="{{ url_for('admin.dashboard') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 sm:px-5 sm:py-2 md:px-6 md:py-3">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Password validation
+    document.getElementById('password').addEventListener('input', validatePassword);
+    document.getElementById('confirm_password').addEventListener('input', validateConfirmPassword);
+
+    function validatePassword() {
+        const password = document.getElementById('password').value;
+        const feedback = document.getElementById('password-feedback') || 
+            document.createElement('span');
+        
+        feedback.id = 'password-feedback';
+        feedback.className = 'text-xs mt-1';
+
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[@$!%*?&]/.test(password);
+        const isLongEnough = password.length >= 8;
+
+        if (hasUppercase && hasLowercase && hasNumber && hasSpecial && isLongEnough) {
+            feedback.textContent = 'Password meets all criteria.';
+            feedback.className = 'text-xs text-green-500 mt-1';
+        } else {
+            feedback.textContent = 'Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.';
+            feedback.className = 'text-xs text-red-500 mt-1';
+        }
+
+        // Add feedback element if it doesn't exist
+        if (!document.getElementById('password-feedback')) {
+            document.getElementById('password').parentNode.appendChild(feedback);
+        }
+    }
+
+    function validateConfirmPassword() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const feedback = document.getElementById('confirm-password-feedback') || 
+            document.createElement('span');
+        
+        feedback.id = 'confirm-password-feedback';
+        feedback.className = 'text-xs mt-1';
+
+        if (password === confirmPassword) {
+            feedback.textContent = 'Passwords match.';
+            feedback.className = 'text-xs text-green-500 mt-1';
+        } else {
+            feedback.textContent = 'Passwords do not match.';
+            feedback.className = 'text-xs text-red-500 mt-1';
+        }
+
+        // Add feedback element if it doesn't exist
+        if (!document.getElementById('confirm-password-feedback')) {
+            document.getElementById('confirm_password').parentNode.appendChild(feedback);
+        }
+    }
+</script>
+{% endblock %}
