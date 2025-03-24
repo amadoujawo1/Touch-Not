@@ -2,9 +2,9 @@ import os
 
 class Config:
     # Database configuration
-    # If DATABASE_URL environment variable is not set, use the local SQLite connection for easier local development
-    # For production, set the DATABASE_URL environment variable to your MySQL connection string
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///cash_collection.db')
+    # Use the DATABASE_URL from environment (PostgreSQL on Replit)
+    # with fallback to MySQL for local development
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:password@localhost/cash_collection')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_recycle": 300,
