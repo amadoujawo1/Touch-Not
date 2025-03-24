@@ -22,10 +22,10 @@ app.config.from_object('config.Config')
 app.secret_key = os.environ.get("SESSION_SECRET") or 'dev-key-for-testing'
 
 # Log database connection info
-if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-    logging.error("DATABASE_URL environment variable not set - falling back to default configuration")
-else:
+try:
     logging.info(f"Using database: {app.config.get('SQLALCHEMY_DATABASE_URI').split('@')[-1]}")
+except Exception as e:
+    logging.error(f"Error parsing database URI: {e}")
 
 # Initialize extensions with the app
 db.init_app(app)
@@ -50,27 +50,32 @@ app.register_blueprint(common_bp)
 
 # Create database tables
 with app.app_context():
-    import models
-    db.create_all()
-    
-    # Create admin user if not exists
-    from models import User
-    from werkzeug.security import generate_password_hash
-    
-    admin = User.query.filter_by(username='admin').first()
-    if not admin:
-        admin = User(
-            username='admin',
-            password_hash=generate_password_hash('admin123'),
-            role='admin',
-            email='admin@example.com',
-            telephone='123-456-7890',
-            gender='other',
-            active=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-        logging.info("Admin user created")
+    try:
+        import models
+        db.create_all()
+        
+        # Create admin user if not exists
+        from models import User
+        from werkzeug.security import generate_password_hash
+        
+        admin = User.query.filter_by(username='admin').first()
+        if not admin:
+            admin = User(
+                username='admin',
+                password_hash=generate_password_hash('admin123'),
+                role='admin',
+                email='admin@example.com',
+                telephone='123-456-7890',
+                gender='other',
+                active=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+            logging.info("Admin user created")
+    except Exception as e:
+        logging.error(f"Database connection error: {str(e)}")
+        logging.error("Make sure your MySQL server is running and the 'cash_collection' database exists")
+        logging.error("You may need to create the database first with: CREATE DATABASE cash_collection;")
 
 @login_manager.user_loader
 def load_user(user_id):
