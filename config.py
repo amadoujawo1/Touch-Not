@@ -2,10 +2,9 @@ import os
 
 class Config:
     # Database configuration
-    # Explicitly use MySQL for local development
-    # You may need to create the 'cash_collection' database first
-    # and update credentials if needed
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost/cash_collection'
+    # Use PostgreSQL database provided by Replit
+    # Falls back to SQLite for local development
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///cash_collection.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_recycle": 300,
