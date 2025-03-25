@@ -15,7 +15,7 @@ class Base(DeclarativeBase):
     pass
 
 # Initialize extensions without app
-db = SQLAlchemy()
+db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
 def create_mysql_database(app):
@@ -71,7 +71,7 @@ def register_blueprints(app):
 
 def setup_database(app):
     # Check if we're using MySQL locally and try to create database if needed
-    if not os.environ.get('REPL_ID') and 'mysql+pymysql' in app.config.get('SQLALCHEMY_DATABASE_URI', 'mysql+pymysql://root:Muhammad@20@localhost/cash_collection'):
+    if not os.environ.get('REPL_ID') and 'mysql+pymysql' in app.config.get('SQLALCHEMY_DATABASE_URI', 'navicat://conn.mysql@local/4511B031a1896af2?Conn.Host=localhost&Conn.Name=cash_collection&Conn.Port=3306&Conn.UseHTTP=false&Conn.UseSSH=false&Conn.UseSSL=false&Conn.UseSocketFile=false&Conn.Username=jawo'):
         create_mysql_database(app)
     
     # Add error handler for database errors
@@ -123,10 +123,7 @@ def setup_database(app):
 def create_app():
     # Create the Flask application
     app = Flask(__name__)
-    
-    # Set the MySQL URI for the database connection
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://jawo:abc_123@localhost/cash_collection'
-    
+    app.config.from_object('config.Config')
     app.secret_key = os.environ.get("SESSION_SECRET") or 'dev-key-for-testing'
 
     # Create error template if it doesn't exist

@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask_login import UserMixin
-from app import db
+from flask import current_app
+from extensions import db
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -16,8 +17,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    reports = db.relationship('Report', backref='submitter', lazy='dynamic', 
-                              foreign_keys='Report.submitted_by_id')
+    reports = db.relationship('Report', backref='submitter', lazy='dynamic', foreign_keys='Report.submitted_by_id')
     
     def __repr__(self):
         return f'<User {self.username}>'
