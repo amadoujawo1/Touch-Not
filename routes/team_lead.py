@@ -23,26 +23,26 @@ def dashboard():
     # Get flights and supervisors for form
     flights = Flight.query.all()
     supervisors = FlightSupervisor.query.all()
-    
+
     # Create a new form with dynamic choices
     form = ReportForm()
     form.flight.choices = [('', 'Select Flight')] + [(flight.name, flight.name) for flight in flights]
     form.supervisor.choices = [('', 'Select Supervisor')] + [(supervisor.name, supervisor.name) for supervisor in supervisors]
-    
+
     # Check if team lead has update activation
     is_update_activated = False
     activation = TeamLeadActivation.query.filter_by(team_lead_id=current_user.id).order_by(TeamLeadActivation.id.desc()).first()
     activated_date = None
-    
+
     if activation:
         today = datetime.now().date()
         if activation.date == today:
             is_update_activated = True
             activated_date = activation.date
-    
+
     # Get reports submitted by this team lead
     reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.date.desc()).all()
-    
+
     return render_template('team_lead/dashboard.html', 
                           form=form, 
                           reports=reports, 
@@ -54,11 +54,11 @@ def dashboard():
 def submit_report():
     flights = Flight.query.all()
     supervisors = FlightSupervisor.query.all()
-    
+
     form = ReportForm()
     form.flight.choices = [('', 'Select Flight')] + [(flight.name, flight.name) for flight in flights]
     form.supervisor.choices = [('', 'Select Supervisor')] + [(supervisor.name, supervisor.name) for supervisor in supervisors]
-    
+
     if form.validate_on_submit():
         # Calculate total attended
         total_attended = (
@@ -67,7 +67,7 @@ def submit_report():
             form.deportees.data + form.transit.data + form.waivers.data + 
             form.prepaid_bank.data + form.round_trip.data + form.late_payment.data
         ) - form.refunds.data
-        
+
         report = Report(
             date=form.date.data,
             ref_no=form.ref_no.data,
@@ -90,42 +90,42 @@ def submit_report():
             remarks=form.remarks.data,
             submitted_by_id=current_user.id
         )
-        
+
         db.session.add(report)
         db.session.commit()
-        
+
         flash('Report submitted successfully.', 'success')
         return redirect(url_for('team_lead.dashboard'))
-    
+
     for field, errors in form.errors.items():
         for error in errors:
             flash(f'{getattr(form, field).label.text}: {error}', 'danger')
-    
+
     return redirect(url_for('team_lead.dashboard'))
 
 @team_lead_bp.route('/reports/<int:report_id>/update', methods=['POST'])
 @team_lead_required
 def update_report(report_id):
     report = Report.query.get_or_404(report_id)
-    
+
     # Verify that this report belongs to the current user
     if report.submitted_by_id != current_user.id:
         flash('You do not have permission to update this report.', 'danger')
         return redirect(url_for('team_lead.dashboard'))
-    
+
     # Check if the team lead is activated for updates
     activation = TeamLeadActivation.query.filter_by(team_lead_id=current_user.id).order_by(TeamLeadActivation.id.desc()).first()
     is_activated = False
-    
+
     if activation:
         today = datetime.now().date()
         if activation.date == today:
             is_activated = True
-    
+
     if not is_activated:
         flash('You do not have permission to update reports. Contact a Data Analyst for activation.', 'danger')
         return redirect(url_for('team_lead.dashboard'))
-    
+
     # Get data from request
     paid = int(request.form.get('paid', 0))
     diplomats = int(request.form.get('diplomats', 0))
@@ -140,13 +140,13 @@ def update_report(report_id):
     round_trip = int(request.form.get('round_trip', 0))
     late_payment = int(request.form.get('late_payment', 0))
     remarks = request.form.get('remarks', '')
-    
+
     # Calculate total attended
     total_attended = (
         paid + diplomats + infants + not_paid + paid_card_qr + 
         deportees + transit + waivers + prepaid_bank + round_trip + late_payment
     ) - refunds
-    
+
     # Update report
     report.paid = paid
     report.diplomats = diplomats
@@ -164,9 +164,9 @@ def update_report(report_id):
     report.remarks = remarks
     report.verified = False  # Reset verification status
     report.verified_by_id = None
-    
+
     db.session.commit()
-    
+
     flash('Report updated successfully. It will need to be verified again.', 'success')
     return redirect(url_for('team_lead.dashboard'))
 
