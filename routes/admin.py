@@ -149,8 +149,8 @@ def add_supervisor():
             flash(f'Supervisor "{supervisor_name}" already exists.', 'danger')
         else:
             supervisor = FlightSupervisor(name=supervisor_name)
-            current_app.db.session.add(supervisor)
-            current_app.db.session.commit()
+            db.session.add(supervisor)
+            db.session.commit()
             flash(f'Supervisor "{supervisor_name}" has been added.', 'success')
     
     return redirect(url_for('admin.manage_flights_supervisors'))
@@ -159,8 +159,8 @@ def add_supervisor():
 @admin_required
 def delete_supervisor(supervisor_id):
     supervisor = FlightSupervisor.query.get_or_404(supervisor_id)
-    current_app.db.session.delete(supervisor)
-    current_app.db.session.commit()
+    db.session.delete(supervisor)
+    db.session.commit()
     flash(f'Supervisor "{supervisor.name}" has been deleted.', 'success')
     return redirect(url_for('admin.manage_flights_supervisors'))
 
