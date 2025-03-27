@@ -22,7 +22,7 @@ def create_mysql_database(app):
             try:
                 connection = pymysql.connect(
                     host=app.config.get('MYSQL_HOST', 'localhost'),
-                     port=3309,
+                    #  port=3309,
                     user=app.config.get('MYSQL_USER', 'root'),
                     password=app.config.get('MYSQL_PASSWORD', 'MineOne'),
                     charset='utf8mb4',
