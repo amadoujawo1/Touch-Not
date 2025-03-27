@@ -4,6 +4,7 @@
 # Ignore cache folder and python compiled files
 *.pyc
 __pycache__/
+__pycache__/*.pyc
 
 
 # Ingore config file
