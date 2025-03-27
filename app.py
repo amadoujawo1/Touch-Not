@@ -206,12 +206,13 @@
 
 
 
-
+# app.py
 import os
 import logging
 import pymysql
-from flask import Flask, render_template
+from flask import Flask,render_template
 from extensions import db, login_manager
+from config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -252,7 +253,13 @@ def create_mysql_database(app):
         return False
 
 def register_blueprints(app):
-    from routes import auth_bp, admin_bp, team_lead_bp, data_analyst_bp, cash_controller_bp, common_bp
+    from routes.auth import auth_bp
+    from routes.admin import admin_bp
+    from routes.team_lead import team_lead_bp
+    from routes.data_analyst import data_analyst_bp
+    from routes.cash_controller import cash_controller_bp
+    from routes.common import common_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(team_lead_bp, url_prefix='/team-lead')
@@ -306,26 +313,15 @@ def setup_database(app):
 def create_app():
     """Initialize Flask app."""
     app = Flask(__name__)
+    app.config.from_object(Config)
 
-    # Load Configurations
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        'DATABASE_URL', 'mysql+pymysql://jawo:abc_123@localhost/cash_collection'
-    )
-    app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'jawo'
-    app.config['MYSQL_PASSWORD'] = 'abc_123'
-    app.config['SECRET_KEY'] = os.environ.get("SESSION_SECRET") or 'dev-key-for-testing'
-
-    # Initialize Extensions
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
 
-    # Register Blueprints
     register_blueprints(app)
 
-    # Set up the database
     setup_database(app)
 
     return app

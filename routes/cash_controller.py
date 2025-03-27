@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+# routes/cash_controller.py
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user
-from app import db
 from models import Report
 from utils.export import export_to_csv
 from io import StringIO

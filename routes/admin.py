@@ -1,9 +1,12 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+# routes/admin.py
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from app import db
 from models import User, Flight, FlightSupervisor
 from forms import RegisterForm, FlightSupervisorForm
+from extensions import db
+
+
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -49,7 +52,7 @@ def manage_users():
 def activate_user(user_id):
     user = User.query.get_or_404(user_id)
     user.active = True
-    db.session.commit()
+    current_app.db.session.commit()
     flash(f'User {user.username} has been activated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -61,7 +64,7 @@ def deactivate_user(user_id):
         flash('Cannot deactivate admin user.', 'danger')
     else:
         user.active = False
-        db.session.commit()
+        current_app.db.session.commit()
         flash(f'User {user.username} has been deactivated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -72,8 +75,8 @@ def delete_user(user_id):
     if user.username == 'admin':
         flash('Cannot delete admin user.', 'danger')
     else:
-        db.session.delete(user)
-        db.session.commit()
+        current_app.db.session.delete(user)
+        current_app.db.session.commit()
         flash(f'User {user.username} has been deleted.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -87,7 +90,7 @@ def reset_password(user_id):
         flash('Password is required.', 'danger')
     else:
         user.password_hash = generate_password_hash(new_password)
-        db.session.commit()
+        current_app.db.session.commit()
         flash(f'Password for {user.username} has been reset.', 'success')
     
     return redirect(url_for('admin.manage_users'))
@@ -105,6 +108,7 @@ def manage_flights_supervisors():
                           form=form)
 
 @admin_bp.route('/flights', methods=['POST'])
+
 @admin_required
 def add_flight():
     flight_name = request.form.get('flight_name')
@@ -145,8 +149,8 @@ def add_supervisor():
             flash(f'Supervisor "{supervisor_name}" already exists.', 'danger')
         else:
             supervisor = FlightSupervisor(name=supervisor_name)
-            db.session.add(supervisor)
-            db.session.commit()
+            current_app.db.session.add(supervisor)
+            current_app.db.session.commit()
             flash(f'Supervisor "{supervisor_name}" has been added.', 'success')
     
     return redirect(url_for('admin.manage_flights_supervisors'))
@@ -155,8 +159,8 @@ def add_supervisor():
 @admin_required
 def delete_supervisor(supervisor_id):
     supervisor = FlightSupervisor.query.get_or_404(supervisor_id)
-    db.session.delete(supervisor)
-    db.session.commit()
+    current_app.db.session.delete(supervisor)
+    current_app.db.session.commit()
     flash(f'Supervisor "{supervisor.name}" has been deleted.', 'success')
     return redirect(url_for('admin.manage_flights_supervisors'))
 

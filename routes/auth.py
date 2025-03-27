@@ -1,3 +1,4 @@
+# routes/auth.py
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -5,25 +6,18 @@ from forms import LoginForm, RegisterForm
 from models import User
 from extensions import db
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/')
 def index():
     if current_user.is_authenticated:
-        if current_user.role == 'admin':
-            return redirect(url_for('admin.dashboard'))
-        elif current_user.role == 'teamLead':
-            return redirect(url_for('team_lead.dashboard'))
-        elif current_user.role == 'dataAnalyst':
-            return redirect(url_for('data_analyst.dashboard'))
-        elif current_user.role == 'cashController':
-            return redirect(url_for('cash_controller.dashboard'))
+        return redirect(url_for('admin.dashboard'))
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('common.index'))
+        return redirect(url_for('main.dashboard'))
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -32,7 +26,7 @@ def login():
         if user and check_password_hash(user.password_hash, form.password.data) and user.active:
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('auth.index'))
+            return redirect(next_page or url_for('admin.dashboard'))
         else:
             flash('Invalid credentials or user is deactivated. Please try again or contact Admin.', 'danger')
 
@@ -54,7 +48,6 @@ def register():
 
     form = RegisterForm()
     if form.validate_on_submit():
-        # Check if username already exists
         if User.query.filter_by(username=form.username.data).first():
             flash('Username already exists.', 'danger')
             return render_template('register.html', form=form)
@@ -73,6 +66,6 @@ def register():
         db.session.commit()
 
         flash('User account created successfully.', 'success')
-        return redirect(url_for('admin.manage_users'))
+        return redirect(url_for('auth.index'))
 
     return render_template('register.html', form=form)

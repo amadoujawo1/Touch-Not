@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+# routes/data_analyst.py
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from datetime import datetime
-from app import db
 from models import Report, User, TeamLeadActivation
 from forms import VerificationForm, TeamLeadActivationForm
 
@@ -74,7 +74,7 @@ def verify_report(report_id):
         report.verified = True
         report.verified_by_id = current_user.id
         
-        db.session.commit()
+        current_app.db.session.commit()
         
         flash('Report has been verified successfully.', 'success')
         return redirect(url_for('data_analyst.dashboard'))
@@ -101,8 +101,8 @@ def activate_team_lead():
             activated_by_id=current_user.id
         )
         
-        db.session.add(activation)
-        db.session.commit()
+        current_app.db.session.add(activation)
+        current_app.db.session.commit()
         
         team_lead = User.query.get(team_lead_id)
         flash(f'Update activated for {team_lead.username} on {date.strftime("%Y-%m-%d")}.', 'success')

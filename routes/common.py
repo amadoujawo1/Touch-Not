@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify, redirect, url_for
+# routes/common.py
+from flask import Blueprint, jsonify, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from app import db
 from models import Flight, FlightSupervisor
 
 common_bp = Blueprint('common', __name__)

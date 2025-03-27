@@ -1,18 +1,9 @@
+# routes/__init__.py
+from .auth import auth_bp
+from .admin import admin_bp
+from .team_lead import team_lead_bp
+from .data_analyst import data_analyst_bp
+from .cash_controller import cash_controller_bp
+from .common import common_bp
 
-from flask import Blueprint
-
-# Create blueprints
-auth_bp = Blueprint('auth', __name__)
-admin_bp = Blueprint('admin', __name__)
-team_lead_bp = Blueprint('team_lead', __name__)
-data_analyst_bp = Blueprint('data_analyst', __name__)
-cash_controller_bp = Blueprint('cash_controller', __name__)
-common_bp = Blueprint('common', __name__)
-
-# Import routes using absolute imports
-from routes import auth
-from routes import admin
-from routes import team_lead
-from routes import data_analyst
-from routes import cash_controller
-from routes import common
+__all__ = ['auth_bp', 'admin_bp', 'team_lead_bp', 'data_analyst_bp', 'cash_controller_bp', 'common_bp']

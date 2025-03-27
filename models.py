@@ -1,6 +1,6 @@
+# models.py
 from datetime import datetime
 from flask_login import UserMixin
-from flask import current_app
 from extensions import db
 
 class User(UserMixin, db.Model):
