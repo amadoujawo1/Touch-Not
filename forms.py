@@ -46,6 +46,17 @@ class RegisterForm(FlaskForm):
         if not re.search(r'[@$!%*?&]', password):
             raise ValidationError('Password must contain at least one special character (@$!%*?&)')
 
+    def validate_password(self, field):
+        password = field.data
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', password):
+            raise ValidationError('Password must contain at least one lowercase letter')
+        if not re.search(r'\d', password):
+            raise ValidationError('Password must contain at least one number')
+        if not re.search(r'[@$!%*?&]', password):
+            raise ValidationError('Password must contain at least one special character (@$!%*?&)')
+
 class ReportForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     ref_no = StringField('Reference Number', validators=[DataRequired()])
