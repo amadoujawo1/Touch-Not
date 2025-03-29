@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Constants
-const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+const INACTIVITY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
 let inactivityTimer;
 
 // Initialize inactivity timeout for automatic logout
@@ -28,8 +28,18 @@ function initInactivityTimeout() {
 function resetInactivityTimeout() {
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-        // Redirect to logout page after inactivity
-        window.location.href = '/logout';
+        // Show a user-friendly message before logout
+        const message = 'Your session has expired due to inactivity. For security reasons, you have been logged out after 2 minutes of inactivity.';
+        // Clear any existing session data
+        sessionStorage.clear();
+        localStorage.clear();
+        // Perform a server-side logout first
+        fetch('/logout', { method: 'GET' })
+            .finally(() => {
+                // Always redirect to login page with timeout message, regardless of logout success
+                window.location.href = '/login?timeout=true';
+                sessionStorage.setItem('timeoutMessage', message);
+            });
     }, INACTIVITY_TIMEOUT);
 }
 

@@ -1,5 +1,18 @@
 /* Base styles for the cash collection report application */
 
+/* Heading styles */
+h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+}
+
 /* Override some Bootstrap styles for better aesthetics */
 :root {
   --primary-color: #3b82f6;

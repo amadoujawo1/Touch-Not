@@ -69,6 +69,7 @@ class ReportForm(FlaskForm):
     ], validators=[DataRequired()])
     
     # Passenger counts
+    total_attended = IntegerField('Total Attended', default=0, validators=[NumberRange(min=0)])
     paid = IntegerField('Paid', default=0, validators=[NumberRange(min=0)])
     diplomats = IntegerField('Diplomats', default=0, validators=[NumberRange(min=0)])
     infants = IntegerField('Infants', default=0, validators=[NumberRange(min=0)])

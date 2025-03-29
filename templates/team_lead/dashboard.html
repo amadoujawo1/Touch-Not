@@ -2,6 +2,10 @@
 
 {% block title %}Team Lead Dashboard{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <h1>Team Lead Dashboard</h1>
@@ -54,6 +58,12 @@
                 </div>
 
                 <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.total_attended.label }}
+                            {{ form.total_attended(class="form-control") }}
+                        </div>
+                    </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             {{ form.paid.label }}
@@ -139,7 +149,10 @@
                     {{ form.remarks(class="form-control") }}
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Submit Report</button>
+                <div class="d-flex gap-2 mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="calculateTotal()">Calculate Total</button>
+                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                </div>
             </form>
         </div>
     </div>
@@ -267,4 +280,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function calculateTotal() {
+    const paid = parseInt(document.getElementById('paid').value) || 0;
+    const diplomats = parseInt(document.getElementById('diplomats').value) || 0;
+    const infants = parseInt(document.getElementById('infants').value) || 0;
+    const notPaid = parseInt(document.getElementById('not_paid').value) || 0;
+    const paidCardQr = parseInt(document.getElementById('paid_card_qr').value) || 0;
+    const deportees = parseInt(document.getElementById('deportees').value) || 0;
+    const transit = parseInt(document.getElementById('transit').value) || 0;
+    const waivers = parseInt(document.getElementById('waivers').value) || 0;
+    const prepaidBank = parseInt(document.getElementById('prepaid_bank').value) || 0;
+    const roundTrip = parseInt(document.getElementById('round_trip').value) || 0;
+    const latePayment = parseInt(document.getElementById('late_payment').value) || 0;
+    const refunds = parseInt(document.getElementById('refunds').value) || 0;
+
+    const total = paid + diplomats + infants + notPaid + paidCardQr + deportees + 
+                 transit + waivers + prepaidBank + roundTrip + latePayment - refunds;
+
+    document.getElementById('total_attended').value = total;
+    alert('Total Attended: ' + total);
+}
+</script>
 {% endblock %}

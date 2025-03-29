@@ -27,8 +27,11 @@
             {% if recent_activations %}
             <ul class="space-y-2">
                 {% for activation in recent_activations %}
-                <li class="p-2 bg-gray-50 rounded flex justify-between">
-                    <span>{{ activation.team_lead.username }}</span>
+                <li class="p-2 bg-gray-50 rounded flex justify-between items-center">
+                    <div>
+                        <span class="font-medium">{{ activation.team_lead.username }}</span>
+                        <span class="text-sm text-gray-500 ml-2">(Activated by: {{ activation.activated_by.username }})</span>
+                    </div>
                     <span class="text-gray-500">{{ activation.date.strftime('%Y-%m-%d') }}</span>
                 </li>
                 {% endfor %}
@@ -40,6 +43,24 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
+        <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">IICS Total</h3>
+                <p class="text-2xl font-bold text-blue-600" id="iicsTotal">{{ iics_total|default('0') }}</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">GIA Total</h3>
+                <p class="text-2xl font-bold text-green-600" id="giaTotal">{{ gia_total|default('0') }}</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">IICS-Total Difference</h3>
+                <p class="text-2xl font-bold text-purple-600" id="iicsDiff">{{ iics_diff|default('0') }}</p>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">GIA-Total Difference</h3>
+                <p class="text-2xl font-bold text-orange-600" id="giaDiff">{{ gia_diff|default('0') }}</p>
+            </div>
+        </div>
         <h2 class="text-xl font-semibold mb-4">Reports for Verification</h2>
         
         <div class="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow mb-4">
@@ -111,6 +132,40 @@
     const flightFilter = document.getElementById('flightFilter');
     const startDateFilter = document.getElementById('startDateFilter');
     const endDateFilter = document.getElementById('endDateFilter');
+    
+    // Function to update verification totals
+    function updateVerificationTotals() {
+        fetch('/data-analyst/verification-totals')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('iicsTotal').textContent = data.iics_total || '0';
+                document.getElementById('giaTotal').textContent = data.gia_total || '0';
+                document.getElementById('iicsDiff').textContent = data.iics_diff || '0';
+                document.getElementById('giaDiff').textContent = data.gia_diff || '0';
+            })
+            .catch(error => console.error('Error updating totals:', error));
+    }
+
+    // Update totals when a report is verified
+    document.querySelectorAll('a[href*="verify_report"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(this.href)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('tr').querySelector('td:nth-last-child(2)').innerHTML =
+                            '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>';
+                        this.parentElement.innerHTML = '';
+                        updateVerificationTotals();
+                    }
+                })
+                .catch(error => console.error('Error verifying report:', error));
+        });
+    });
+
+    // Initial update of totals
+    updateVerificationTotals();
     
     function filterTable() {
         const rows = document.querySelectorAll('#reportTableBody tr');

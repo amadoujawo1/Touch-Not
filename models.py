@@ -45,7 +45,27 @@ class Report(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
-    ref_no = db.Column(db.String(50), nullable=False)
+    ref_no = db.Column(db.String(50), unique=True, nullable=False)
+    
+    @staticmethod
+    def generate_ref_no():
+        """Generate a unique reference number"""
+        # Get the latest report ordered by id
+        latest_report = Report.query.order_by(Report.id.desc()).first()
+        
+        # If no reports exist, start with 1, otherwise increment the last number
+        if not latest_report:
+            next_number = 1
+        else:
+            # Extract the number from the last ref_no and increment it
+            try:
+                last_number = int(latest_report.ref_no)
+                next_number = last_number + 1
+            except ValueError:
+                # If the last ref_no wasn't a number, start with 1
+                next_number = 1
+        
+        return str(next_number)
     supervisor = db.Column(db.String(100), nullable=False)
     flight_name = db.Column(db.String(100), nullable=False)
     zone = db.Column(db.String(20), nullable=False)  # arrival, departure

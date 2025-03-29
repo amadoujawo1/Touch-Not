@@ -238,7 +238,7 @@
         
         const totalAttended =  report.total_attended;
         
-        function calculateTotals() {
+        async function calculateTotals() {
             // Calculate IICS total
             const iicsInfant = parseInt(iicsInfantInput.value) || 0;
             const iicsAdult = parseInt(iicsAdultInput.value) || 0;
@@ -246,7 +246,6 @@
             
             iicsTotalInput.value = iicsTotal;
             iicsTotalDisplay.textContent = iicsTotal;
-            iicsDifferenceDisplay.textContent = iicsTotal - totalAttended;
             
             // Calculate GIA total
             const giaInfant = parseInt(giaInfantInput.value) || 0;
@@ -255,19 +254,32 @@
             
             giaTotalInput.value = giaTotal;
             giaTotalDisplay.textContent = giaTotal;
-            giaDifferenceDisplay.textContent = giaTotal - totalAttended;
             
-            // Highlight differences
-            if (iicsTotal !== totalAttended) {
-                iicsDifferenceDisplay.classList.add('text-red-600');
-            } else {
-                iicsDifferenceDisplay.classList.remove('text-red-600');
-            }
+            // Fetch real-time totals from server
+            try {
+                const response = await fetch('/data-analyst/verification-totals');
+                const data = await response.json();
+                
+                // Update differences with real-time values
+                iicsDifferenceDisplay.textContent = (iicsTotal - (data.iics_total || 0));
+                giaDifferenceDisplay.textContent = (giaTotal - (data.gia_total || 0))
             
-            if (giaTotal !== totalAttended) {
-                giaDifferenceDisplay.classList.add('text-red-600');
-            } else {
-                giaDifferenceDisplay.classList.remove('text-red-600');
+                // Highlight differences based on real-time data
+                if (Math.abs(iicsTotal - (data.iics_total || 0)) > 0) {
+                    iicsDifferenceDisplay.classList.add('text-red-600');
+                } else {
+                    iicsDifferenceDisplay.classList.remove('text-red-600');
+                }
+                
+                if (Math.abs(giaTotal - (data.gia_total || 0)) > 0) {
+                    giaDifferenceDisplay.classList.add('text-red-600');
+                } else {
+                    giaDifferenceDisplay.classList.remove('text-red-600');
+                }
+            } catch (error) {
+                console.error('Error fetching verification totals:', error);
+                iicsDifferenceDisplay.textContent = 'Error';
+                giaDifferenceDisplay.textContent = 'Error';
             }
         }
         
