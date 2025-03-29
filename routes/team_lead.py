@@ -249,7 +249,7 @@ def submit_report():
 
         report = Report(
             date=form.date.data,
-            ref_no=form.ref_no.data,
+            ref_no=Report.generate_ref_no(),
             supervisor=form.supervisor.data,
             flight_name=form.flight.data,
             zone=form.zone.data,

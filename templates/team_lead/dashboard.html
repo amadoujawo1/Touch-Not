@@ -14,7 +14,31 @@
         <div class="alert alert-success">Updates enabled for today ({{ activated_date }})</div>
     {% endif %}
 
-    <div class="card mb-4">
+    <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="dailyTrendsChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="passengerDistributionChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="paymentMethodsChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="verificationStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
         <div class="card-header">
             <h2>Submit New Report</h2>
         </div>
