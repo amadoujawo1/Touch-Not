@@ -1,8 +1,8 @@
+# forms.py
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, DateField, IntegerField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
 import re
-
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -52,12 +52,6 @@ class ChangePasswordForm(FlaskForm):
         DataRequired(),
         Length(min=8, message='Password must be at least 8 characters long')
     ])
-    
-    def __init__(self, *args, **kwargs):
-        super(ChangePasswordForm, self).__init__(*args, **kwargs)
-        from flask_login import current_user
-        if not current_user.first_login:
-            self.current_password.validators = [DataRequired()]
     confirm_password = PasswordField('Confirm New Password', validators=[
         DataRequired(),
         EqualTo('new_password', message='Passwords must match')
