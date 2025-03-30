@@ -45,7 +45,7 @@ class DataEntryForm {
     
     const formData = new FormData(this.form);
     const sum = [
-      'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
+      'paid', 'diplomats', 'infants','adults','not_paid', 'paid_card_qr',
       'deportees', 'transit', 'waivers', 'prepaid_bank',
       'round_trip', 'late_payment'
     ].reduce((sum, field) => {
@@ -72,7 +72,7 @@ class DataEntryForm {
     
     // Validate numeric fields (non-negative)
     const numericFields = [
-      'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
+      'paid', 'diplomats', 'infants','adults', 'not_paid', 'paid_card_qr',
       'refunds', 'deportees', 'transit', 'waivers', 'prepaid_bank',
       'round_trip', 'late_payment'
     ];

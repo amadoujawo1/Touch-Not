@@ -396,6 +396,15 @@ class DataTable {
       const iicsTotal = total; // IICS Total includes all fields, including refunds
       const giaTotal = totalAttended; // GIA Total matches total attended (excluding refunds)
 
+      // Force re-render after saving changes
+      this.render({
+        data: storage.getReportsByUser(this.currentUser.username).sort((a, b) => new Date(b.date) - new Date(a.date)),
+        showVerification: false,
+        onUpdate: this.onUpdate,
+        onDownload: this.onDownload,
+        canDownload: this.canDownload
+      })
+
       console.log('Updated Data Before Save:', updatedData, 'Total:', total, 'Total Attended:', totalAttended, 'IICS Total:', iicsTotal, 'GIA Total:', giaTotal); // Debug log
 
       const report = storage.getReportById(id);

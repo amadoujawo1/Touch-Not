@@ -418,6 +418,14 @@ class App {
       };
 
       if (storage.updateReport(id, updatedReport)) {
+        // Re-render the data table to show updated data
+        this.dataTable.render({
+          data: storage.getReportsByUser(this.currentUser.username).sort((a, b) => new Date(b.date) - new Date(a.date)),
+          showVerification: false,
+          onUpdate: storage.isUpdateActivated(this.currentUser.username, selectedDate) ? this.handleReportUpdate.bind(this) : null,
+          onDownload: () => exportUtils.exportToCSV(storage.getReportsByUser(this.currentUser.username).filter(r => r.verified && this.isFiltered(r))),
+          canDownload: false
+        });
         this.showModal('Success', 'Report updated successfully!', () => {
           this.showTeamLeadDashboard();
           this.updateDataAnalystTable(); // Reflect updates on Data Analyst dashboard immediately

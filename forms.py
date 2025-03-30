@@ -46,7 +46,25 @@ class RegisterForm(FlaskForm):
         if not re.search(r'[@$!%*?&]', password):
             raise ValidationError('Password must contain at least one special character (@$!%*?&)')
 
-    def validate_password(self, field):
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password')
+    new_password = PasswordField('New Password', validators=[
+        DataRequired(),
+        Length(min=8, message='Password must be at least 8 characters long')
+    ])
+    
+    def __init__(self, *args, **kwargs):
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+        from flask_login import current_user
+        if not current_user.first_login:
+            self.current_password.validators = [DataRequired()]
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(),
+        EqualTo('new_password', message='Passwords must match')
+    ])
+    submit = SubmitField('Change Password')
+    
+    def validate_new_password(self, field):
         password = field.data
         if not re.search(r'[A-Z]', password):
             raise ValidationError('Password must contain at least one uppercase letter')

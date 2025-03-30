@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(10), nullable=False)  # male, female, other
     telephone = db.Column(db.String(20), nullable=False)
     active = db.Column(db.Boolean, default=True)
+    first_login = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
