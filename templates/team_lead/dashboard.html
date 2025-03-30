@@ -26,29 +26,93 @@
             </div>
         {% endif %}
 
+    <!-- Analytics Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-primary">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Total Passengers</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ total_passengers }}</h3>
+                </div>
+                <div class="p-3 bg-primary/10 rounded-full">
+                    <i class="fas fa-users text-primary text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-success">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Verified Reports</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ verified_reports }}</h3>
+                </div>
+                <div class="p-3 bg-success/10 rounded-full">
+                    <i class="fas fa-check-circle text-success text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-warning">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Pending Reports</p>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ pending_reports }}</h3>
+                </div>
+                <div class="p-3 bg-warning/10 rounded-full">
+                    <i class="fas fa-clock text-warning text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-info">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Total Revenue</p>
+                    <h3 class="text-2xl font-bold text-gray-800">${{ total_revenue }}</h3>
+                </div>
+                <div class="p-3 bg-info/10 rounded-full">
+                    <i class="fas fa-dollar-sign text-info text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Charts Section -->
-         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="dailyTrendsChart"></canvas>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-chart-line mr-2 text-primary"></i>
+                Daily Trends
+            </h3>
+            <div class="h-[300px]">
+                <canvas id="dailyTrendsChart"></canvas>
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="passengerDistributionChart"></canvas>
-                </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-users mr-2 text-primary"></i>
+                Passenger Distribution
+            </h3>
+            <div class="h-[300px]">
+                <canvas id="passengerDistributionChart"></canvas>
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="paymentMethodsChart"></canvas>
-                </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-credit-card mr-2 text-primary"></i>
+                Payment Methods
+            </h3>
+            <div class="h-[300px]">
+                <canvas id="paymentMethodsChart"></canvas>
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="verificationStatusChart"></canvas>
-                </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-tasks mr-2 text-primary"></i>
+                Verification Status
+            </h3>
+            <div class="h-[300px]">
+                <canvas id="verificationStatusChart"></canvas>
             </div>
-        </div> 
+        </div>
+    </div>
 
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div class="border-b border-gray-200 pb-4 mb-6 text-center">
@@ -56,9 +120,9 @@
                 <i class="fas fa-plane-departure mr-2 text-primary/80"></i>
                 Flight Data Entry Form
             </h2>
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center justify-center">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center">
                 <i class="fas fa-file-alt mr-2 text-primary"></i>
-                Submit New Report
+                Flight Information and Passenger Counts
             </h3>
         </div>
         <div class="space-y-6">
@@ -90,11 +154,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mt-6">
-                    <div class="form-group">
-                        {{ form.total_attended.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.total_attended(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
                     <div class="form-group">
                         {{ form.paid.label(class="block text-sm font-medium text-gray-700 mb-2") }}
                         {{ form.paid(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
@@ -156,21 +216,23 @@
                     {{ form.remarks(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 h-24") }}
                 </div>
 
-                <div class="flex justify-end space-x-4 mt-6">
-                    <button type="button" 
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200" 
-                            onclick="calculateTotal()">
-                        <i class="fas fa-calculator mr-2"></i>Calculate Total
-                    </button>
-                    <button type="button"
-                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-                            onclick="document.querySelector('form').reset()">
-                        <i class="fas fa-eraser mr-2"></i>Clear Form
-                    </button>
-                    <button type="submit" 
-                            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]">
-                        <i class="fas fa-paper-plane mr-2"></i>Submit Report
-                    </button>
+                <div class="flex justify-between items-center space-x-4 mt-6">
+                    <div class="flex items-center">
+                        <label for="total_attended" class="text-gray-700 font-medium mr-2">Total Attended:</label>
+                        <input type="number" id="total_attended" name="total_attended" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200" readonly>
+                    </div>
+                    <div class="flex space-x-4">
+
+                        <button type="button"
+                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+                                onclick="document.querySelector('form').reset()">
+                            <i class="fas fa-eraser mr-2"></i>Clear Form
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]">
+                            <i class="fas fa-paper-plane mr-2"></i>Submit Report
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

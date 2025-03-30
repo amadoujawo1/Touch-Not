@@ -42,7 +42,7 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <img src="{{ url_for('static', filename='images/sp.jpg', _external=True) }}" alt="SP Logo" class="h-12 w-auto hover:scale-105 transition-transform duration-200" />
-                    <h1 class="text-2xl font-extrabold text-primary sm:text-3xl md:text-4xl transition-colors duration-200 hover:text-primary/90">
+                    <h1 class="text-3xl font-extrabold text-primary sm:text-4xl md:text-5xl transition-colors duration-200 hover:text-primary/90">
                         <i class="fas fa-chart-line mr-2"></i>
                         Daily Cash Collection Report
                     </h1>
@@ -89,7 +89,7 @@
         <div class="container mx-auto px-4 text-center">
             <p class="text-gray-600 font-medium transition-colors duration-200 hover:text-primary">
                 <i class="fas fa-shield-alt mr-2"></i>
-                &copy; 2025 Securiport Cash Collection Report
+                &copy; 2025 Securiport. All rights reserved.
             </p>
         </div>
     </footer>
@@ -98,6 +98,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Initialize inactivity timeout
+        let inactivityTimeout;
+        const TIMEOUT_DURATION = 120000; // 2 minutes in milliseconds
+
+        function resetInactivityTimeout() {
+            clearTimeout(inactivityTimeout);
+            inactivityTimeout = setTimeout(() => {
+                window.location.href = "{{ url_for('auth.logout', timeout='true') }}";
+            }, TIMEOUT_DURATION);
+        }
+
+        // Reset timeout on user activity
+        document.addEventListener('mousemove', resetInactivityTimeout);
+        document.addEventListener('keypress', resetInactivityTimeout);
+        document.addEventListener('click', resetInactivityTimeout);
+        document.addEventListener('scroll', resetInactivityTimeout);
+
+        // Initial setup
+        resetInactivityTimeout();
+    </script>
     
     {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
