@@ -130,7 +130,7 @@
 
 
 # routes/data_analyst.py
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app, Response
 from flask_login import login_required, current_user
 from datetime import datetime
 from models import Report, User, TeamLeadActivation
@@ -205,6 +205,8 @@ def verify_report(report_id):
         report.gia_total = gia_total
         report.verified = True
         report.verified_by_id = current_user.id
+        report.verified_date = datetime.utcnow()
+        report.verified_date = datetime.utcnow()
         
         db.session.commit()
         
@@ -256,3 +258,84 @@ def get_reports():
 def get_unverified_reports():
     reports = Report.query.filter_by(verified=False).order_by(Report.date.desc()).all()
     return jsonify([report.to_dict() for report in reports])
+
+@data_analyst_bp.route('/verification-totals')
+@data_analyst_required
+def verification_totals():
+    # Get today's reports
+    today = datetime.utcnow().date()
+    reports = Report.query.filter(Report.date == today).all()
+    
+    # Calculate totals
+    iics_total = sum(r.iics_total or 0 for r in reports if r.verified)
+    gia_total = sum(r.gia_total or 0 for r in reports if r.verified)
+    iics_diff = sum((r.total_attended or 0) - (r.iics_total or 0) for r in reports if r.verified)
+    gia_diff = sum((r.total_attended or 0) - (r.gia_total or 0) for r in reports if r.verified)
+    
+    return jsonify({
+        'iics_total': iics_total,
+        'gia_total': gia_total,
+        'iics_diff': iics_diff,
+        'gia_diff': gia_diff
+    })
+
+@data_analyst_bp.route('/download-csv')
+@data_analyst_required
+def download_csv():
+    from io import StringIO
+    import csv
+    from datetime import datetime
+
+    # Get filter parameters
+    supervisor = request.args.get('supervisor')
+    flight = request.args.get('flight')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    # Base query
+    query = Report.query
+
+    # Apply filters
+    if supervisor:
+        query = query.filter(Report.supervisor.ilike(f'%{supervisor}%'))
+    if flight:
+        query = query.filter(Report.flight.ilike(f'%{flight}%'))
+    if start_date:
+        query = query.filter(Report.date >= datetime.strptime(start_date, '%Y-%m-%d').date())
+    if end_date:
+        query = query.filter(Report.date <= datetime.strptime(end_date, '%Y-%m-%d').date())
+
+    # Filter verified reports
+    query = query.filter_by(verified=True)
+
+    # Get filtered reports
+    reports = query.order_by(Report.date.desc()).all()
+
+    # Create CSV file
+    si = StringIO()
+    cw = csv.writer(si)
+    
+    # Write headers
+    cw.writerow(['Date', 'Supervisor', 'Flight', 'IICS Total', 'GIA Total', 'Verified By', 'Verification Date'])
+    
+    # Write data
+    for report in reports:
+        verified_by = User.query.get(report.verified_by_id).username if report.verified_by_id else 'N/A'
+        cw.writerow([
+            report.date.strftime('%Y-%m-%d'),
+            report.supervisor,
+            report.flight_name,
+            report.iics_total,
+            report.gia_total,
+            verified_by,
+            report.verified_date.strftime('%Y-%m-%d') if report.verified_date else 'N/A'
+        ])
+
+    output = si.getvalue()
+    si.close()
+
+    return Response(
+        output,
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment;filename=verified_reports_{datetime.now().strftime("%Y%m%d")}.csv'}
+    )

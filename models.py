@@ -96,6 +96,7 @@ class Report(db.Model):
     
     # Status
     verified = db.Column(db.Boolean, default=False)
+    verified_date = db.Column(db.DateTime)
     remarks = db.Column(db.Text)
     
     # Relationships
