@@ -189,11 +189,11 @@
                         {% for report in reports %}
                         <tr class="hover:bg-gray-50">
                             <td class="py-2 px-4 border-b">{{ report.date }}</td>
-                            <td class="py-2 px-4 border-b">{{ report.ref_no if report.ref_no else 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.ref_no }}</td>
                             <td class="py-2 px-4 border-b">{{ report.supervisor }}</td>
-                            <td class="py-2 px-4 border-b">{{ report.flight_name if report.flight_name else 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.flight_name }}</td>
                             <td class="py-2 px-4 border-b">{{ report.zone }}</td>
-                            <td class="py-2 px-4 border-b">{{ report.total_attended if report.total_attended else 0 }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.total_attended }}</td>
                             <td class="py-2 px-4 border-b">
                                 {% if report.verified %}
                                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>
