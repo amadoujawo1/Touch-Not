@@ -48,15 +48,19 @@
         <!-- Chart Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium mb-2 text-gray-700">Passenger Trends</h3>
                 <canvas id="passengerTrendsChart"></canvas>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium mb-2 text-gray-700">Passenger Types Distribution</h3>
                 <canvas id="passengerTypesChart"></canvas>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium mb-2 text-gray-700">Verification Status</h3>
                 <canvas id="verificationStatusChart"></canvas>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-medium mb-2 text-gray-700">Zone Distribution</h3>
                 <canvas id="zoneDistributionChart"></canvas>
             </div>
         </div>
@@ -81,20 +85,29 @@
         </div>
         <h2 class="text-xl font-semibold mb-4">Reports for Verification</h2>
         
-        <div class="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow mb-4">
-            <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
-            <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
-            <div class="flex-1 min-w-[200px] flex items-center">
-                <label for="startDateFilter" class="mr-2 text-gray-700">Start Date:</label>
-                <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+        <div class="bg-white rounded-lg shadow mb-4">
+            <div class="p-4 border-b">
+                <h3 class="text-lg font-medium text-gray-700">Filter Reports</h3>
+                <p class="text-sm text-gray-500" id="filterSummary"></p>
             </div>
-            <div class="flex-1 min-w-[200px] flex items-center">
-                <label for="endDateFilter" class="mr-2 text-gray-700">End Date:</label>
-                <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+            <div class="flex flex-wrap gap-4 p-4">
+                <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="startDateFilter" class="mr-2 text-gray-700">Start Date:</label>
+                    <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="endDateFilter" class="mr-2 text-gray-700">End Date:</label>
+                    <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button id="downloadBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-150 ease-in-out flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download Report (Verified Only)
+                </button>
             </div>
-            <button id="downloadBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
-                Download Report (Verified Only)
-            </button>
         </div>
         
         <div class="overflow-x-auto">

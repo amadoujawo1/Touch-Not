@@ -1,362 +1,218 @@
 {% extends "base.html" %}
 
-{% block title %}Team Lead Dashboard{% endblock %}
-
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-{% endblock %}
+{% block title %}Team Lead Dashboard - Daily Cash Collection Report{% endblock title %}
 
 {% block content %}
-<div class="container">
-    <div class="bg-white rounded-xl shadow-xl p-8 mb-8 transform transition-all duration-300 hover:shadow-2xl">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-primary mb-2 flex items-center">
-                    <i class="fas fa-user-tie mr-3 text-primary/80"></i>
-                    Team Lead Dashboard
-                </h1>
-                <p class="text-gray-600 -mt-4 mb-6">Manage flight data and passenger information</p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-3">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <!-- <h2 class="text-xl font-semibold mb-4">Flight Data Entry Form</h2> -->
+            
+            {% if is_update_activated %}
+            <div class="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded mb-4">
+                <i class="fas fa-check-circle mr-2"></i> Update mode is active for today ({{ activated_date if activated_date is string else activated_date.strftime('%Y-%m-%d') }})
             </div>
-        </div>
-
-        {% if is_update_activated %}
-            <div class="bg-success/10 text-success p-4 rounded-lg flex items-center mb-6">
-                <i class="fas fa-check-circle mr-2"></i>
-                <span>Updates enabled for today ({{ activated_date }})</span>
-            </div>
-        {% endif %}
-
-    <!-- Analytics Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-primary">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-sm">Total Passengers</p>
-                    <h3 class="text-2xl font-bold text-gray-800">{{ total_passengers }}</h3>
+            {% endif %}
+            
+            <form id="dataEntryForm" action="{{ url_for('team_lead.submit_report') }}" method="POST" class="space-y-8 bg-gradient-to-b from-white to-gray-50 p-8 rounded-xl shadow-sm">
+                {{ form.hidden_tag() }}
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Flight Data Entry Form</h2>
+                    <p class="text-gray-600">Enter flight details and passenger information</p>
                 </div>
-                <div class="p-3 bg-primary/10 rounded-full">
-                    <i class="fas fa-users text-primary text-xl"></i>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-success">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-sm">Verified Reports</p>
-                    <h3 class="text-2xl font-bold text-gray-800">{{ verified_reports }}</h3>
-                </div>
-                <div class="p-3 bg-success/10 rounded-full">
-                    <i class="fas fa-check-circle text-success text-xl"></i>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-warning">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-sm">Pending Reports</p>
-                    <h3 class="text-2xl font-bold text-gray-800">{{ pending_reports }}</h3>
-                </div>
-                <div class="p-3 bg-warning/10 rounded-full">
-                    <i class="fas fa-clock text-warning text-xl"></i>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-info">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-sm">Total Revenue</p>
-                    <h3 class="text-2xl font-bold text-gray-800">${{ total_revenue }}</h3>
-                </div>
-                <div class="p-3 bg-info/10 rounded-full">
-                    <i class="fas fa-dollar-sign text-info text-xl"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-chart-line mr-2 text-primary"></i>
-                Daily Trends
-            </h3>
-            <div class="h-[300px]">
-                <canvas id="dailyTrendsChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-users mr-2 text-primary"></i>
-                Passenger Distribution
-            </h3>
-            <div class="h-[300px]">
-                <canvas id="passengerDistributionChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-credit-card mr-2 text-primary"></i>
-                Payment Methods
-            </h3>
-            <div class="h-[300px]">
-                <canvas id="paymentMethodsChart"></canvas>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-tasks mr-2 text-primary"></i>
-                Verification Status
-            </h3>
-            <div class="h-[300px]">
-                <canvas id="verificationStatusChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div class="border-b border-gray-200 pb-4 mb-6 text-center">
-            <h2 class="text-2xl font-bold text-primary mb-4 flex items-center justify-center">
-                <i class="fas fa-plane-departure mr-2 text-primary/80"></i>
-                Flight Data Entry Form
-            </h2>
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-                <i class="fas fa-file-alt mr-2 text-primary"></i>
-                Flight Information and Passenger Counts
-            </h3>
-        </div>
-        <div class="space-y-6">
-            <form method="POST" action="{{ url_for('team_lead.submit_report') }}">
-                {{ form.csrf_token }}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="form-group">
-                        {{ form.date.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.date(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.ref_no.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.ref_no(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.zone.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.zone(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
+                
+                <!-- Flight Information Section -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Flight Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            {{ form.date(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+                            {{ form.ref_no(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", placeholder="Enter reference number", required=true) }}
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Supervisor</label>
+                            {{ form.supervisor(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Flight</label>
+                            {{ form.flight(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                            {{ form.zone(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                        </div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="form-group">
-                        {{ form.flight.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.flight(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.supervisor.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.supervisor(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
+                
+                <!-- Passenger Counts Section -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Passenger Counts</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                💰 Paid
+                            </label>
+                            {{ form.paid(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                🎖️ Diplomats
+                            </label>
+                            {{ form.diplomats(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                👶 Infants
+                            </label>
+                            {{ form.infants(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                ❌ Not Paid
+                            </label>
+                            {{ form.not_paid(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                💳 Paid Card/QR
+                            </label>
+                            {{ form.paid_card_qr(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                ↩️ Refunds
+                            </label>
+                            {{ form.refunds(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                🚫 Deportees
+                            </label>
+                            {{ form.deportees(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                🔄 Transit
+                            </label>
+                            {{ form.transit(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                📋 Waivers
+                            </label>
+                            {{ form.waivers(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                🏦 Prepaid Bank
+                            </label>
+                            {{ form.prepaid_bank(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                🔁 Round Trip
+                            </label>
+                            {{ form.round_trip(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                ⏰ Late Payment
+                            </label>
+                            {{ form.late_payment(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                        </div>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-                    <div class="form-group">
-                        {{ form.paid.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.paid(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.diplomats.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.diplomats(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.infants.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.infants(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.not_paid.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.not_paid(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
+                
+                <!-- Remarks Section -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                        {{ form.remarks(rows=3, class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", placeholder="Enter any additional remarks or notes") }}
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-                    <div class="form-group">
-                        {{ form.paid_card_qr.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.paid_card_qr(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
+                
+                <!-- Form Footer -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <div class="text-lg font-semibold flex items-center gap-2">
+                        <span class="text-gray-700">Total Attended:</span>
+                        <span id="totalAttended" class="text-2xl text-blue-600">0</span>
                     </div>
-                    <div class="form-group">
-                        {{ form.refunds.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.refunds(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.deportees.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.deportees(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.transit.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.transit(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-                    <div class="form-group">
-                        {{ form.waivers.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.waivers(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.prepaid_bank.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.prepaid_bank(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.round_trip.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.round_trip(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.late_payment.label(class="block text-sm font-medium text-gray-700 mb-2") }}
-                        {{ form.late_payment(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50") }}
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.remarks.label }}</label>
-                    {{ form.remarks(class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 h-24") }}
-                </div>
-
-                <div class="flex justify-between items-center space-x-4 mt-6">
-                    <div class="flex items-center">
-                        <label for="total_attended" class="text-gray-700 font-medium mr-2">Total Attended:</label>
-                        <input type="number" id="total_attended" name="total_attended" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200" readonly>
-                    </div>
-                    <div class="flex space-x-4">
-
-                        <button type="button"
-                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-                                onclick="document.querySelector('form').reset()">
-                            <i class="fas fa-eraser mr-2"></i>Clear Form
+                    <div class="flex gap-4 flex-col sm:flex-row">
+                        <button type="reset" id="resetButton" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+                            Clear Form
                         </button>
-                        <button type="submit" 
-                                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-all duration-200 flex items-center shadow-md hover:shadow-lg transform hover:scale-[1.02]">
-                            <i class="fas fa-paper-plane mr-2"></i>Submit Report
-                        </button>
+                        {{ form.submit(class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all") }}
                     </div>
                 </div>
             </form>
         </div>
     </div>
-
-    <div class="bg-white rounded-xl shadow-lg p-6">
-        <div class="border-b border-gray-200 pb-4 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center">
-                <i class="fas fa-history mr-2 text-primary"></i>
-                My Reports
-            </h2>
-        </div>
-        <div class="space-y-6">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
+    
+    <div class="lg:col-span-3">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Your Reports</h2>
+            
+            <div class="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow mb-4">
+                <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
+                <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="startDateFilter" class="mr-2 text-gray-700">Start Date:</label>
+                    <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+                </div>
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="endDateFilter" class="mr-2 text-gray-700">End Date:</label>
+                    <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
                         <tr>
-                            <th>Date</th>
-                            <th>Ref No</th>
-                            <th>Flight</th>
-                            <th>Supervisor</th>
-                            <th>Total Attended</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="py-2 px-4 border-b text-left">Date</th>
+                            <th class="py-2 px-4 border-b text-left">Ref No</th>
+                            <th class="py-2 px-4 border-b text-left">Supervisor</th>
+                            <th class="py-2 px-4 border-b text-left">Flight</th>
+                            <th class="py-2 px-4 border-b text-left">Zone</th>
+                            <th class="py-2 px-4 border-b text-left">Total Attended</th>
+                            <th class="py-2 px-4 border-b text-left">Status</th>
+                            <th class="py-2 px-4 border-b text-left">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="reportTableBody">
                         {% for report in reports %}
-                        <tr>
-                            <td>{{ report.date }}</td>
-                            <td>{{ report.ref_no }}</td>
-                            <td>{{ report.flight_name }}</td>
-                            <td>{{ report.supervisor }}</td>
-                            <td>{{ report.total_attended }}</td>
-                            <td>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-2 px-4 border-b">{{ report.date }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.ref_no if report.ref_no else 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.supervisor }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.flight_name if report.flight_name else 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.zone }}</td>
+                            <td class="py-2 px-4 border-b">{{ report.total_attended if report.total_attended else 0 }}</td>
+                            <td class="py-2 px-4 border-b">
                                 {% if report.verified %}
-                                    <span class="badge bg-success">Verified</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>
                                 {% else %}
-                                    <span class="badge bg-warning">Pending</span>
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Pending</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="py-2 px-4 border-b">
                                 {% if not report.verified and is_update_activated %}
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ report.id }}">
-                                    Edit
+                                <button 
+                                    class="text-blue-500 hover:text-blue-700 update-report-btn" 
+                                    data-report-id="{{ report.id }}" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#updateReportModal">
+                                    <i class="fas fa-edit"></i> Update
                                 </button>
                                 {% endif %}
                             </td>
                         </tr>
-
-                        <!-- Edit Modal -->
-                        <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Report</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form method="POST" action="{{ url_for('team_lead.update_report', report_id=report.id) }}">
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Paid</label>
-                                                    <input type="number" name="paid" class="form-control" value="{{ report.paid }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Diplomats</label>
-                                                    <input type="number" name="diplomats" class="form-control" value="{{ report.diplomats }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Infants</label>
-                                                    <input type="number" name="infants" class="form-control" value="{{ report.infants }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Not Paid</label>
-                                                    <input type="number" name="not_paid" class="form-control" value="{{ report.not_paid }}">
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Paid Card/QR</label>
-                                                    <input type="number" name="paid_card_qr" class="form-control" value="{{ report.paid_card_qr }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Refunds</label>
-                                                    <input type="number" name="refunds" class="form-control" value="{{ report.refunds }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Deportees</label>
-                                                    <input type="number" name="deportees" class="form-control" value="{{ report.deportees }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Transit</label>
-                                                    <input type="number" name="transit" class="form-control" value="{{ report.transit }}">
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Waivers</label>
-                                                    <input type="number" name="waivers" class="form-control" value="{{ report.waivers }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Prepaid Bank</label>
-                                                    <input type="number" name="prepaid_bank" class="form-control" value="{{ report.prepaid_bank }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Round Trip</label>
-                                                    <input type="number" name="round_trip" class="form-control" value="{{ report.round_trip }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Late Payment</label>
-                                                    <input type="number" name="late_payment" class="form-control" value="{{ report.late_payment }}">
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label>Remarks</label>
-                                                <textarea name="remarks" class="form-control">{{ report.remarks }}</textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Update Report</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -364,30 +220,179 @@
         </div>
     </div>
 </div>
+
+<!-- Update Report Modal -->
+<div class="modal fade" id="updateReportModal" tabindex="-1" aria-labelledby="updateReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateReportModalLabel">Update Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="updateReportModalBody">
+                <!-- Form will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-{{ super() }}
 <script>
-function calculateTotal() {
-    const paid = parseInt(document.getElementById('paid').value) || 0;
-    const diplomats = parseInt(document.getElementById('diplomats').value) || 0;
-    const infants = parseInt(document.getElementById('infants').value) || 0;
-    const notPaid = parseInt(document.getElementById('not_paid').value) || 0;
-    const paidCardQr = parseInt(document.getElementById('paid_card_qr').value) || 0;
-    const deportees = parseInt(document.getElementById('deportees').value) || 0;
-    const transit = parseInt(document.getElementById('transit').value) || 0;
-    const waivers = parseInt(document.getElementById('waivers').value) || 0;
-    const prepaidBank = parseInt(document.getElementById('prepaid_bank').value) || 0;
-    const roundTrip = parseInt(document.getElementById('round_trip').value) || 0;
-    const latePayment = parseInt(document.getElementById('late_payment').value) || 0;
-    const refunds = parseInt(document.getElementById('refunds').value) || 0;
-
-    const total = paid + diplomats + infants + notPaid + paidCardQr + deportees + 
-                 transit + waivers + prepaidBank + roundTrip + latePayment - refunds;
-
-    document.getElementById('total_attended').value = total;
-    alert('Total Attended: ' + total);
-}
+    // Calculate total attended
+    const calculateTotal = () => {
+        const formData = {
+            paid: parseInt(document.getElementById('paid').value) || 0,
+            diplomats: parseInt(document.getElementById('diplomats').value) || 0,
+            infants: parseInt(document.getElementById('infants').value) || 0,
+            not_paid: parseInt(document.getElementById('not_paid').value) || 0,
+            paid_card_qr: parseInt(document.getElementById('paid_card_qr').value) || 0,
+            refunds: parseInt(document.getElementById('refunds').value) || 0,
+            deportees: parseInt(document.getElementById('deportees').value) || 0,
+            transit: parseInt(document.getElementById('transit').value) || 0,
+            waivers: parseInt(document.getElementById('waivers').value) || 0,
+            prepaid_bank: parseInt(document.getElementById('prepaid_bank').value) || 0,
+            round_trip: parseInt(document.getElementById('round_trip').value) || 0,
+            late_payment: parseInt(document.getElementById('late_payment').value) || 0
+        };
+        
+        const sum = Object.values(formData).reduce((acc, val) => acc + val, 0) - formData.refunds;
+        document.getElementById('totalAttended').textContent = sum;
+    };
+    
+    // Add event listeners to all number inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+    
+    // Reset button confirmation
+    document.getElementById('resetButton').addEventListener('click', (e) => {
+        if (!confirm('Are you sure you want to clear the form? All data will be cleared.')) {
+            e.preventDefault();
+        }
+    });
+    
+    // Update report functionality
+    const updateButtons = document.querySelectorAll('.update-report-btn');
+    updateButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const reportId = btn.getAttribute('data-report-id');
+            const modalBody = document.getElementById('updateReportModalBody');
+            
+            // Fetch report data (You would need to implement this endpoint)
+            const response = await fetch(`/team-lead/api/reports?id=${reportId}`);
+            const reports = await response.json();
+            
+            if (reports.length > 0) {
+                const report = reports[0];
+                
+                // Create update form
+                modalBody.innerHTML = `
+                    <form id="updateReportForm" method="POST" action="/team-lead/reports/${reportId}/update">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="form-group">
+                                <label for="u_paid">Paid</label>
+                                <input type="number" id="u_paid" name="paid" class="form-control" value="${report.paid}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_diplomats">Diplomats</label>
+                                <input type="number" id="u_diplomats" name="diplomats" class="form-control" value="${report.diplomats}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_infants">Infants</label>
+                                <input type="number" id="u_infants" name="infants" class="form-control" value="${report.infants}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_not_paid">Not Paid</label>
+                                <input type="number" id="u_not_paid" name="not_paid" class="form-control" value="${report.notPaid}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_paid_card_qr">Paid Card/QR</label>
+                                <input type="number" id="u_paid_card_qr" name="paid_card_qr" class="form-control" value="${report.paidCardQr}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_refunds">Refunds</label>
+                                <input type="number" id="u_refunds" name="refunds" class="form-control" value="${report.refunds}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_deportees">Deportees</label>
+                                <input type="number" id="u_deportees" name="deportees" class="form-control" value="${report.deportees}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_transit">Transit</label>
+                                <input type="number" id="u_transit" name="transit" class="form-control" value="${report.transit}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_waivers">Waivers</label>
+                                <input type="number" id="u_waivers" name="waivers" class="form-control" value="${report.waivers}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_prepaid_bank">Prepaid Bank</label>
+                                <input type="number" id="u_prepaid_bank" name="prepaid_bank" class="form-control" value="${report.prepaidBank}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_round_trip">Round Trip</label>
+                                <input type="number" id="u_round_trip" name="round_trip" class="form-control" value="${report.roundTrip}" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="u_late_payment">Late Payment</label>
+                                <input type="number" id="u_late_payment" name="late_payment" class="form-control" value="${report.latePayment}" min="0">
+                            </div>
+                        </div>
+                        <div class="form-group mt-4">
+                            <label for="u_remarks">Remarks</label>
+                            <textarea id="u_remarks" name="remarks" class="form-control" rows="3">${report.remarks || ''}</textarea>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Report</button>
+                        </div>
+                    </form>
+                `;
+                
+                // Show the modal
+                new bootstrap.Modal(document.getElementById('updateReportModal')).show();
+            }
+        });
+    });
+    
+    // Filtering functionality
+    const supervisorFilter = document.getElementById('supervisorFilter');
+    const flightFilter = document.getElementById('flightFilter');
+    const startDateFilter = document.getElementById('startDateFilter');
+    const endDateFilter = document.getElementById('endDateFilter');
+    
+    function filterTable() {
+        const rows = document.querySelectorAll('#reportTableBody tr');
+        
+        rows.forEach(row => {
+            const supervisor = row.cells[2].textContent.toLowerCase();
+            const flight = row.cells[3].textContent.toLowerCase();
+            const date = row.cells[0].textContent;
+            
+            const matchesSupervisor = !supervisorFilter.value || supervisor.includes(supervisorFilter.value.toLowerCase());
+            const matchesFlight = !flightFilter.value || flight.includes(flightFilter.value.toLowerCase());
+            
+            let matchesDate = true;
+            if (startDateFilter.value && endDateFilter.value) {
+                matchesDate = date >= startDateFilter.value && date <= endDateFilter.value;
+            } else if (startDateFilter.value) {
+                matchesDate = date >= startDateFilter.value;
+            } else if (endDateFilter.value) {
+                matchesDate = date <= endDateFilter.value;
+            }
+            
+            if (matchesSupervisor && matchesFlight && matchesDate) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    supervisorFilter.addEventListener('input', filterTable);
+    flightFilter.addEventListener('input', filterTable);
+    startDateFilter.addEventListener('input', filterTable);
+    endDateFilter.addEventListener('input', filterTable);
 </script>
 {% endblock %}

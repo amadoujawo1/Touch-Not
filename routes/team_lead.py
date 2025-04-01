@@ -188,6 +188,7 @@ from datetime import datetime
 from extensions import db
 from models import Report, Flight, FlightSupervisor, TeamLeadActivation
 from forms import ReportForm
+from utils.export import export_to_csv
 
 team_lead_bp = Blueprint('team_lead', __name__)
 
@@ -200,6 +201,24 @@ def team_lead_required(f):
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
+
+@team_lead_bp.route('/api/reports/<int:report_id>', methods=['PUT'])
+@team_lead_required
+def update_report_api(report_id):
+    report = Report.query.get_or_404(report_id)
+    if report.submitted_by_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    for key, value in data.items():
+        setattr(report, key, value)
+    
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Report updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @team_lead_bp.route('/dashboard')
 @team_lead_required
@@ -222,10 +241,11 @@ def dashboard():
             activated_date = activation.date
 
     reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.date.desc()).all()
+    serialized_reports = [report.to_dict() for report in reports]
 
     return render_template('team_lead/dashboard.html', 
                           form=form, 
-                          reports=reports, 
+                          reports=serialized_reports, 
                           is_update_activated=is_update_activated,
                           activated_date=activated_date)
 
@@ -349,3 +369,51 @@ def update_report(report_id):
 def get_reports():
     reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.date.desc()).all()
     return jsonify([report.to_dict() for report in reports])
+
+@team_lead_bp.route('/reports/download-verified')
+@team_lead_required
+def download_verified_reports():
+    # Get all verified reports for the current team lead
+    reports = Report.query.filter_by(
+        submitted_by_id=current_user.id,
+        verified=True
+    ).order_by(Report.date.desc()).all()
+    
+    if not reports:
+        flash('No verified reports found to download.', 'warning')
+        return redirect(url_for('team_lead.dashboard'))
+    
+    # Generate CSV filename with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'verified_reports_{timestamp}.csv'
+    
+    # Export reports to CSV
+    return export_to_csv(reports, filename)
+
+@team_lead_bp.route('/reports/<int:report_id>/download')
+@team_lead_required
+def download_report(report_id):
+    # Get the specific report
+    report = Report.query.get_or_404(report_id)
+    
+    # Verify that this report belongs to the current user and is verified
+    if report.submitted_by_id != current_user.id:
+        flash('You do not have permission to download this report.', 'danger')
+        return redirect(url_for('team_lead.dashboard'))
+        
+    if not report.verified:
+        flash('Only verified reports can be downloaded.', 'warning')
+        return redirect(url_for('team_lead.dashboard'))
+    
+    # Export single report to CSV
+    return export_to_csv([report])
+
+@team_lead_bp.route('/api/team-lead/flights-supervisors')
+@team_lead_required
+def get_team_lead_flights_supervisors():
+    flights = Flight.query.all()
+    supervisors = FlightSupervisor.query.all()
+    return jsonify({
+        'flights': [flight.name for flight in flights],
+        'supervisors': [supervisor.name for supervisor in supervisors]
+    })

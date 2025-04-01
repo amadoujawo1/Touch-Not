@@ -1,5 +1,5 @@
 # models.py
-from datetime import datetime
+from datetime import datetime, date
 from flask_login import UserMixin
 from extensions import db
 
@@ -18,7 +18,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    reports = db.relationship('Report', backref='submitter', lazy='dynamic', foreign_keys='Report.submitted_by_id')
+    reports = db.relationship('Report', backref=db.backref('submitter', uselist=False), lazy='dynamic', foreign_keys='Report.submitted_by_id')
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -98,6 +98,8 @@ class Report(db.Model):
     verified = db.Column(db.Boolean, default=False)
     verified_date = db.Column(db.DateTime)
     remarks = db.Column(db.Text)
+
+
     
     # Relationships
     submitted_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -120,38 +122,129 @@ class Report(db.Model):
         ) - self.refunds
     
     def to_dict(self):
-        """Convert report to dictionary for API responses"""
+        """Convert report to dictionary for API responses with proper JSON serialization"""
+        try:
+            total_attended = self.calculate_total()
+        except (TypeError, AttributeError):
+            total_attended = 0
+            
+        def safe_int(value):
+            try:
+                return int(value) if value is not None else 0
+            except (TypeError, ValueError):
+                return 0
+                
+        def safe_str(value):
+            return str(value) if value else ''
+            
+        def safe_date(value):
+            try:
+                if value is None or value == "undefined" or value == "" or value == "null" or value == "NaN":
+                    return None
+                if isinstance(value, str):
+                    value = value.strip()
+                    if not value:
+                        return None
+                    try:
+                        # Try to parse string as datetime with microseconds
+                        parsed_date = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+                        return parsed_date.strftime('%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        try:
+                            # Try to parse string as datetime
+                            parsed_date = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                            return parsed_date.strftime('%Y-%m-%d %H:%M:%S')
+                        except ValueError:
+                            try:
+                                # Try to parse string as date
+                                parsed_date = datetime.strptime(value, '%Y-%m-%d')
+                                return parsed_date.strftime('%Y-%m-%d')
+                            except ValueError:
+                                return None
+                if isinstance(value, datetime):
+                    return value.strftime('%Y-%m-%d %H:%M:%S')
+                if isinstance(value, date):
+                    return value.strftime('%Y-%m-%d')
+                return None
+            except (AttributeError, ValueError, TypeError):
+                return None
+                
+        def safe_username(user):
+            if user is None or isinstance(user, type(None)) or user == "undefined":
+                return ""
+            try:
+                # Handle User object directly
+                if isinstance(user, User):
+                    return user.username if hasattr(user, 'username') else ""
+                # Handle user ID
+                if isinstance(user, (int, str)):
+                    try:
+                        # Convert to string and strip any whitespace
+                        user_str = str(user).strip()
+                        # Check if the string is empty or contains invalid values
+                        if not user_str or user_str.lower() in ["undefined", "null", "nan", ""]:
+                            return ""
+                        # Check if the string is a valid number
+                        if user_str.isdigit():
+                            user_id = int(user_str)
+                            # First try to get user from relationships
+                            if hasattr(self, 'verified_by') and self.verified_by and self.verified_by.id == user_id:
+                                return self.verified_by.username
+                            if hasattr(self, 'submitter') and self.submitter and self.submitter.id == user_id:
+                                return self.submitter.username
+                            # If not found in relationships, try database lookup
+                            try:
+                                user_obj = User.query.get(user_id)
+                                if user_obj and hasattr(user_obj, 'username'):
+                                    return user_obj.username
+                            except Exception:
+                                return ""
+                    except (ValueError, TypeError, AttributeError):
+                        return ""
+                return ""
+            except Exception:
+                return ""
+            
+        def safe_bool(value):
+            if value is None:
+                return False
+            return bool(value)
+            
         return {
-            'id': self.id,
-            'date': self.date.strftime('%Y-%m-%d'),
-            'refNo': self.ref_no,
-            'supervisor': self.supervisor,
-            'flightName': self.flight_name,
-            'zone': self.zone,
-            'paid': self.paid,
-            'diplomats': self.diplomats,
-            'infants': self.infants,
-            'notPaid': self.not_paid,
-            'paidCardQr': self.paid_card_qr,
-            'refunds': self.refunds,
-            'deportees': self.deportees,
-            'transit': self.transit,
-            'waivers': self.waivers,
-            'prepaidBank': self.prepaid_bank,
-            'roundTrip': self.round_trip,
-            'latePayment': self.late_payment,
-            'totalAttended': self.total_attended,
-            'iicsInfant': self.iics_infant,
-            'iicsAdult': self.iics_adult,
-            'iicsTotal': self.iics_total,
-            'giaInfant': self.gia_infant,
-            'giaAdult': self.gia_adult,
-            'giaTotal': self.gia_total,
-            'verified': self.verified,
-            'remarks': self.remarks,
-            'submittedBy': self.submitter.username if self.submitter else None,
-            'verifiedBy': self.verified_by.username if self.verified_by else None
+            'id': safe_int(self.id),
+            'date': safe_date(self.date),
+            'refNo': safe_str(self.ref_no),
+            'supervisor': safe_str(self.supervisor),
+            'flightName': safe_str(self.flight_name),
+            'zone': safe_str(self.zone),
+            'paid': safe_int(self.paid),
+            'diplomats': safe_int(self.diplomats),
+            'infants': safe_int(self.infants),
+            'notPaid': safe_int(self.not_paid),
+            'paidCardQr': safe_int(self.paid_card_qr),
+            'refunds': safe_int(self.refunds),
+            'deportees': safe_int(self.deportees),
+            'transit': safe_int(self.transit),
+            'waivers': safe_int(self.waivers),
+            'prepaidBank': safe_int(self.prepaid_bank),
+            'roundTrip': safe_int(self.round_trip),
+            'latePayment': safe_int(self.late_payment),
+            'totalAttended': safe_int(total_attended),
+            'iicsInfant': safe_int(self.iics_infant),
+            'iicsAdult': safe_int(self.iics_adult),
+            'iicsTotal': safe_int(self.iics_total),
+            'giaInfant': safe_int(self.gia_infant),
+            'giaAdult': safe_int(self.gia_adult),
+            'giaTotal': safe_int(self.gia_total),
+            'verified': safe_bool(self.verified),
+            'verifiedDate': safe_date(self.verified_date),
+            'remarks': safe_str(self.remarks),
+            'submittedBy': safe_username(self.submitted_by_id),
+            'verifiedBy': safe_username(self.verified_by_id),
+            'createdAt': safe_date(self.created_at),
+            'updatedAt': safe_date(self.updated_at)
         }
+
 
 class TeamLeadActivation(db.Model):
     __tablename__ = 'team_lead_activations'

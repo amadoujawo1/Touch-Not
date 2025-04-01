@@ -2,6 +2,8 @@ class DataTable {
   constructor(container) {
     this.container = container;
     this.currentUser = null; // Store the current user for role-based checks
+    this.uniqueSupervisors = [];
+    this.uniqueFlights = [];
   }
 
   setCurrentUser(user) {
@@ -16,29 +18,79 @@ class DataTable {
     this.onDownload = onDownload;
     this.canDownload = canDownload;
 
+    // Extract unique supervisors and flights
+    this.uniqueSupervisors = [...new Set(data.map(item => item.supervisor))].sort();
+    this.uniqueFlights = [...new Set(data.map(item => item.flightName).filter(Boolean))].sort();
+
     this.container.innerHTML = `
       <div class="space-y-4">
-        <div class="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow sm:p-2 md:p-4">
-          <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md sm:min-w-[150px] sm:px-2 sm:py-1 md:min-w-[200px] md:px-3 md:py-2" />
-          <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md sm:min-w-[150px] sm:px-2 sm:py-1 md:min-w-[200px] md:px-3 md:py-2" />
-          <div class="flex-1 min-w-[200px] flex items-center sm:min-w-[150px]">
-            <label for="startDateFilter" class="mr-2 text-gray-700 sm:text-xs md:text-sm">Start Date:</label>
-            <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md sm:px-2 sm:py-1 md:px-3 md:py-2" />
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="p-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Filter Reports</h3>
           </div>
-          <div class="flex-1 min-w-[200px] flex items-center sm:min-w-[150px]">
-            <label for="endDateFilter" class="mr-2 text-gray-700 sm:text-xs md:text-sm">End Date:</label>
-            <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md sm:px-2 sm:py-1 md:px-3 md:py-2" />
+          <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="space-y-2">
+              <label for="supervisorFilter" class="block text-sm font-medium text-gray-700">Supervisor</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-user"></i>
+                </span>
+                <select id="supervisorFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Supervisors</option>
+                  ${this.uniqueSupervisors.map(supervisor => `<option value="${supervisor}">${supervisor}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="flightFilter" class="block text-sm font-medium text-gray-700">Flight</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-plane"></i>
+                </span>
+                <select id="flightFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Flights</option>
+                  ${this.uniqueFlights.map(flight => `<option value="${flight}">${flight}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="startDateFilter" class="block text-sm font-medium text-gray-700">Start Date</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-calendar"></i>
+                </span>
+                <input type="date" id="startDateFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="endDateFilter" class="block text-sm font-medium text-gray-700">End Date</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-calendar"></i>
+                </span>
+                <input type="date" id="endDateFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
           </div>
           ${canDownload ? `
-            <button id="downloadBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 sm:px-3 sm:py-1 md:px-4 md:py-2 sm:text-xs md:text-sm">
-              Download Report (Verified Only)
-            </button>
+            <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button id="downloadBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-download mr-2"></i>
+                Download Verified Reports
+              </button>
+            </div>
           ` : ''}
         </div>
-        <div class="table-container max-h-[400px] overflow-auto">
-          <table class="min-w-full divide-y divide-gray-200 table-auto">
-            <thead class="bg-gray-50 sticky top-0 z-20">
-              <tr>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
+          <div class="overflow-x-auto">
+            <div class="table-container max-h-[600px] overflow-y-auto">
+              <table class="min-w-full divide-y divide-gray-200 table-auto">
+                <thead class="bg-gray-50 sticky top-0 z-20">
+                  <tr class="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 ${[
                   'Date', 'Ref No', 'Supervisor', 'Flight Name', 'Zone', 'Paid', 'Diplomats', 'Infants', 'Not Paid', 'Paid Card/QR', 'Refunds', 'Deportees', 'Transit', 'Waivers', 'Prepaid Bank', 'Round Trip', 'Late Payment', 'Total Attended',
                   ...(showVerification ? ['IICS Infant', 'IICS Adult', 'IICS Total', 'GIA Infant', 'GIA Adult', 'GIA Total', 'IICS-Total Difference', 'GIA-Total Difference'] : []),
@@ -74,7 +126,7 @@ class DataTable {
           const row = e.target.closest('tr');
           const id = row.dataset.id;
           console.log('Row ID:', id, 'Current User:', this.currentUser); // Debug log
-          if (row && id && !storage.getReportById(id).verified) {
+          if (row && id && !row.dataset.verified) {
             console.log('Enabling verification editing for report ID:', id); // Debug log
             this.enableVerificationEditing(row, id, onVerify);
           } else {
@@ -90,8 +142,7 @@ class DataTable {
         if (e.target.classList.contains('update-btn')) {
           const row = e.target.closest('tr');
           const id = row.dataset.id;
-          const activation = JSON.parse(localStorage.getItem(storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
-          const isActivated = storage.isUpdateActivated(this.currentUser.username, activation.date);
+          const isActivated = row.dataset.canUpdate === 'true';
           console.log('Update button clicked for:', { username: this.currentUser.username, activationDate: activation.date, isActivated }); // Debug log
           if (isActivated) {
             this.enableUpdateEditing(row, id, onUpdate);
@@ -104,8 +155,8 @@ class DataTable {
 
     const filterTable = () => {
       const filteredData = this.data.filter((item) => {
-        const matchesSupervisor = !supervisorFilter.value || item.supervisor.toLowerCase().includes(supervisorFilter.value.toLowerCase());
-        const matchesFlight = !flightFilter.value || (item.flightName || '').toLowerCase().includes(flightFilter.value.toLowerCase());
+        const matchesSupervisor = !supervisorFilter.value || item.supervisor === supervisorFilter.value;
+        const matchesFlight = !flightFilter.value || item.flightName === flightFilter.value;
         const itemDate = new Date(item.date);
         const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
         const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
@@ -132,6 +183,12 @@ class DataTable {
         onDownload(this.data.filter(item => item.verified));
       });
     }
+
+    // Initialize filter button event listener
+    const filterBtn = document.getElementById('filterReports');
+    if (filterBtn) {
+      filterBtn.addEventListener('click', () => this.filterReports());
+    }
   }
 
   renderRows(data, showVerification, onUpdate) {
@@ -142,25 +199,44 @@ class DataTable {
     const selectedDate = activation.date;
 
     return data.map(item => `
-      <tr data-id="${item.id}">
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.date}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refNo}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.supervisor}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.flightName || 'N/A'}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap capitalize sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.zone}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paid || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.diplomats || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.infants || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.notPaid || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paidCardQr || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refunds || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.deportees || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.transit || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.waivers || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.prepaidBank || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.roundTrip || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.latePayment || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.totalAttended || 0}</td>
+      <tr data-id="${item.id}" data-can-update="${selectedDate === item.date}" class="hover:bg-gray-50 transition-colors duration-150 ease-in-out">
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">${item.date}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.refNo || ''}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+          <div class="flex items-center">
+            <span class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center mr-2">
+              <i class="fas fa-user text-gray-500"></i>
+            </span>
+            ${item.supervisor}
+          </div>
+        </td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+          <div class="flex items-center">
+            <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+              <i class="fas fa-plane text-blue-500"></i>
+            </span>
+            ${item.flightName || ''}
+          </div>
+        </td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.zone === 'arrival' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+            ${item.zone}
+          </span>
+        </td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.paid) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.paid || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.diplomats) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.diplomats || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.infants) > 0 ? 'text-purple-600' : 'text-gray-500'}">${item.infants || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.notPaid) > 0 ? 'text-red-600' : 'text-gray-500'}">${item.notPaid || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.paidCardQr) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.paidCardQr || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.refunds) > 0 ? 'text-orange-600' : 'text-gray-500'}">${item.refunds || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.deportees) > 0 ? 'text-red-600' : 'text-gray-500'}">${item.deportees || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.transit) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.transit || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.waivers) > 0 ? 'text-purple-600' : 'text-gray-500'}">${item.waivers || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.prepaidBank) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.prepaidBank || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.roundTrip) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.roundTrip || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.latePayment) > 0 ? 'text-yellow-600' : 'text-gray-500'}">${item.latePayment || 0}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.totalAttended || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-normal sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.remarks || ''}</td>
         ${showVerification ? `
           <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
             <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left iics-infant sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.iicsInfant || 0}" placeholder="0">
@@ -204,6 +280,12 @@ class DataTable {
   enableVerificationEditing(row, id, onVerify) {
     if (!this.currentUser || this.currentUser.role !== 'dataAnalyst') {
       alert('Only Data Analysts can edit and verify reports.');
+      return;
+    }
+
+    const report = storage.getReportById(id);
+    if (!report || report.verified) {
+      alert('This report is already verified or cannot be found.');
       return;
     }
 
@@ -352,6 +434,23 @@ class DataTable {
       return;
     }
 
+    const report = storage.getReportById(id);
+    if (!report) {
+      alert('Report not found.');
+      return;
+    }
+
+    if (report.verified) {
+      alert('Cannot update a verified report.');
+      return;
+    }
+
+    const activation = JSON.parse(localStorage.getItem(storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
+    if (!storage.isUpdateActivated(this.currentUser.username, activation.date)) {
+      alert('You do not have permission to update reports. Contact the Data Analyst for activation.');
+      return;
+    }
+
     const cells = row.querySelectorAll('td');
     const actionCell = cells[cells.length - 1]; // Last cell contains the Update button
 
@@ -395,15 +494,6 @@ class DataTable {
       const totalAttended = total - Number(updatedData['refunds'] || 0); // Subtract refunds for total attended
       const iicsTotal = total; // IICS Total includes all fields, including refunds
       const giaTotal = totalAttended; // GIA Total matches total attended (excluding refunds)
-
-      // Force re-render after saving changes
-      this.render({
-        data: storage.getReportsByUser(this.currentUser.username).sort((a, b) => new Date(b.date) - new Date(a.date)),
-        showVerification: false,
-        onUpdate: this.onUpdate,
-        onDownload: this.onDownload,
-        canDownload: this.canDownload
-      })
 
       console.log('Updated Data Before Save:', updatedData, 'Total:', total, 'Total Attended:', totalAttended, 'IICS Total:', iicsTotal, 'GIA Total:', giaTotal); // Debug log
 
@@ -458,5 +548,26 @@ class DataTable {
     modal.querySelector('button:nth-child(1)').addEventListener('click', () => {
       document.body.removeChild(modal);
     });
+  }
+
+  filterReports() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const status = document.getElementById('verificationStatus').value;
+  
+    const filteredData = this.data.filter(report => {
+      const reportDate = new Date(report.date);
+      const isDateInRange = (!startDate || reportDate >= new Date(startDate)) &&
+                           (!endDate || reportDate <= new Date(endDate));
+      
+      const matchesStatus = status === 'all' ||
+                           (status === 'verified' && report.verified) ||
+                           (status === 'pending' && !report.verified);
+      
+      return isDateInRange && matchesStatus;
+    });
+  
+    const tableBody = this.container.querySelector('#tableBody');
+    tableBody.innerHTML = this.renderRows(filteredData, this.showVerification, this.onUpdate);
   }
 }

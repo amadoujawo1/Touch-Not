@@ -2,10 +2,12 @@ from flask import Blueprint, jsonify
 from datetime import datetime, timedelta
 from models import Report
 from sqlalchemy import func
+from routes.data_analyst import data_analyst_required
 
 charts_bp = Blueprint('charts', __name__)
 
 @charts_bp.route('/data-analyst/chart-data')
+@data_analyst_required
 def get_chart_data():
     # Get the date range for the last 7 days
     end_date = datetime.now().date()
@@ -25,11 +27,11 @@ def get_chart_data():
     # Query data for passenger types
     types_data = Report.query\
         .with_entities(
-            func.sum(Report.iics_count).label('iics'),
-            func.sum(Report.gia_count).label('gia'),
-            func.sum(Report.other_count).label('others')
+            func.sum(Report.iics_total).label('iics'),
+            func.sum(Report.gia_total).label('gia'),
+            func.sum(Report.total_attended - (Report.iics_total + Report.gia_total)).label('others')
         )\
-        .filter(Report.date >= start_date)\
+        .filter(Report.date >= start_date, Report.verified == True)\
         .first()
     
     # Query data for verification status
@@ -40,6 +42,12 @@ def get_chart_data():
         )\
         .filter(Report.date >= start_date)\
         .first()
+
+    # Convert SQLAlchemy result to dict
+    verification_dict = {
+        'verified': int(verification_data.verified or 0),
+        'pending': int(verification_data.pending or 0)
+    }
     
     # Query data for zone distribution
     zone_data = Report.query\
