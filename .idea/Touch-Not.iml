@@ -6,6 +6,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.env" />
+      <excludeFolder url="file://$MODULE_DIR$/env9" />
     </content>
     <orderEntry type="jdk" jdkName="Touch-Not" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
