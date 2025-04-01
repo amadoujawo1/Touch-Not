@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}Submit Report - Daily Cash Collection Report{% endblock %}
@@ -288,3 +289,295 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/DataEntryForm.js') }}"></script>
 {% endblock %}
+=======
+{% extends "base.html" %}
+
+{% block title %}Submit Report - Daily Cash Collection Report{% endblock %}
+
+{% block content %}
+<div class="space-y-8 bg-gradient-to-b from-white to-gray-50 p-8 rounded-xl shadow-lg max-w-5xl mx-auto">
+    <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Flight Data Entry Form</h2>
+        <p class="text-gray-600">Enter flight details and passenger information</p>
+    </div>
+    
+    <form id="dataEntryForm" method="POST" action="{{ url_for('team_lead.submit_report') }}">
+        {{ form.hidden_tag() }}
+        
+        <!-- Flight Information Section -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Flight Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    {{ form.date(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                    {% if form.date.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.date.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+                    {{ form.ref_no(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", placeholder="Enter reference number", required=true) }}
+                    {% if form.ref_no.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.ref_no.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Supervisor</label>
+                    {{ form.supervisor(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                    {% if form.supervisor.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.supervisor.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Flight</label>
+                    {{ form.flight(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                    {% if form.flight.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.flight.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                    {{ form.zone(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", required=true) }}
+                    {% if form.zone.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.zone.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Passenger Counts Section -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Passenger Counts</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        💰 Paid
+                    </label>
+                    {{ form.paid(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.paid.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.paid.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🎖️ Diplomats
+                    </label>
+                    {{ form.diplomats(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.diplomats.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.diplomats.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        👶 Infants
+                    </label>
+                    {{ form.infants(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.infants.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.infants.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        ❌ Not Paid
+                    </label>
+                    {{ form.not_paid(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.not_paid.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.not_paid.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        💳 Paid Card/QR
+                    </label>
+                    {{ form.paid_card_qr(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.paid_card_qr.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.paid_card_qr.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        ↩️ Refunds
+                    </label>
+                    {{ form.refunds(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.refunds.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.refunds.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🚫 Deportees
+                    </label>
+                    {{ form.deportees(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.deportees.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.deportees.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🔄 Transit
+                    </label>
+                    {{ form.transit(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.transit.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.transit.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        📋 Waivers
+                    </label>
+                    {{ form.waivers(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.waivers.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.waivers.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🏦 Prepaid Bank
+                    </label>
+                    {{ form.prepaid_bank(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.prepaid_bank.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.prepaid_bank.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        🔁 Round Trip
+                    </label>
+                    {{ form.round_trip(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.round_trip.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.round_trip.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded-lg transition-all hover:shadow-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        ⏰ Late Payment
+                    </label>
+                    {{ form.late_payment(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0, value=0) }}
+                    {% if form.late_payment.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.late_payment.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Remarks Section -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Information</h3>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                {{ form.remarks(rows=3, class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", placeholder="Enter any additional remarks or notes") }}
+                {% if form.remarks.errors %}
+                <div class="text-red-500 text-sm mt-1">
+                    {% for error in form.remarks.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Form Footer -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div class="text-lg font-semibold flex items-center gap-2">
+                <span class="text-gray-700">Total Attended:</span>
+                <span id="totalAttended" class="text-2xl text-blue-600">0</span>
+            </div>
+            <div class="flex gap-4 flex-col sm:flex-row">
+                <button
+                    type="button"
+                    id="resetButton"
+                    class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all"
+                >
+                    Clear Form
+                </button>
+                {{ form.submit(class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all") }}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/DataEntryForm.js') }}"></script>
+{% endblock %}
+>>>>>>> 98107f59a4616fd4b5fc6c38d9276c6029e43b1d

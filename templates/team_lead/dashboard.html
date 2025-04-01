@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}Team Lead Dashboard - Daily Cash Collection Report{% endblock title %}
@@ -395,4 +396,275 @@
     startDateFilter.addEventListener('input', filterTable);
     endDateFilter.addEventListener('input', filterTable);
 </script>
+=======
+{% extends "base.html" %}
+
+{% block title %}Team Lead Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Team Lead Dashboard</h1>
+
+    {% if is_update_activated %}
+        <div class="alert alert-success">Updates enabled for today ({{ activated_date }})</div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Submit New Report</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('team_lead.submit_report') }}">
+                {{ form.csrf_token }}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {{ form.date.label }}
+                            {{ form.date(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {{ form.ref_no.label }}
+                            {{ form.ref_no(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {{ form.zone.label }}
+                            {{ form.zone(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.flight.label }}
+                            {{ form.flight(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form.supervisor.label }}
+                            {{ form.supervisor(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.paid.label }}
+                            {{ form.paid(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.diplomats.label }}
+                            {{ form.diplomats(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.infants.label }}
+                            {{ form.infants(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.not_paid.label }}
+                            {{ form.not_paid(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.paid_card_qr.label }}
+                            {{ form.paid_card_qr(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.refunds.label }}
+                            {{ form.refunds(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.deportees.label }}
+                            {{ form.deportees(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.transit.label }}
+                            {{ form.transit(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.waivers.label }}
+                            {{ form.waivers(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.prepaid_bank.label }}
+                            {{ form.prepaid_bank(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.round_trip.label }}
+                            {{ form.round_trip(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            {{ form.late_payment.label }}
+                            {{ form.late_payment(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    {{ form.remarks.label }}
+                    {{ form.remarks(class="form-control") }}
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>My Reports</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Ref No</th>
+                            <th>Flight</th>
+                            <th>Supervisor</th>
+                            <th>Total Attended</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.date }}</td>
+                            <td>{{ report.ref_no }}</td>
+                            <td>{{ report.flight_name }}</td>
+                            <td>{{ report.supervisor }}</td>
+                            <td>{{ report.total_attended }}</td>
+                            <td>
+                                {% if report.verified %}
+                                    <span class="badge bg-success">Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not report.verified and is_update_activated %}
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ report.id }}">
+                                    Edit
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Report</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="{{ url_for('team_lead.update_report', report_id=report.id) }}">
+                                            <div class="row">
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Paid</label>
+                                                    <input type="number" name="paid" class="form-control" value="{{ report.paid }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Diplomats</label>
+                                                    <input type="number" name="diplomats" class="form-control" value="{{ report.diplomats }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Infants</label>
+                                                    <input type="number" name="infants" class="form-control" value="{{ report.infants }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Not Paid</label>
+                                                    <input type="number" name="not_paid" class="form-control" value="{{ report.not_paid }}">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Paid Card/QR</label>
+                                                    <input type="number" name="paid_card_qr" class="form-control" value="{{ report.paid_card_qr }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Refunds</label>
+                                                    <input type="number" name="refunds" class="form-control" value="{{ report.refunds }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Deportees</label>
+                                                    <input type="number" name="deportees" class="form-control" value="{{ report.deportees }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Transit</label>
+                                                    <input type="number" name="transit" class="form-control" value="{{ report.transit }}">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Waivers</label>
+                                                    <input type="number" name="waivers" class="form-control" value="{{ report.waivers }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Prepaid Bank</label>
+                                                    <input type="number" name="prepaid_bank" class="form-control" value="{{ report.prepaid_bank }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Round Trip</label>
+                                                    <input type="number" name="round_trip" class="form-control" value="{{ report.round_trip }}">
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label>Late Payment</label>
+                                                    <input type="number" name="late_payment" class="form-control" value="{{ report.late_payment }}">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label>Remarks</label>
+                                                <textarea name="remarks" class="form-control">{{ report.remarks }}</textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Update Report</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+>>>>>>> 98107f59a4616fd4b5fc6c38d9276c6029e43b1d
 {% endblock %}

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 
 {% block title %}Verify Report - Daily Cash Collection Report{% endblock %}
@@ -314,3 +315,309 @@
     });
 </script>
 {% endblock %}
+=======
+{% extends "base.html" %}
+
+{% block title %}Verify Report - Daily Cash Collection Report{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Verify Report</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Report Information</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Date:</span>
+                        <span class="font-medium">{{ report.date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Reference No:</span>
+                        <span class="font-medium">{{ report.ref_no }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Supervisor:</span>
+                        <span class="font-medium">{{ report.supervisor }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Flight:</span>
+                        <span class="font-medium">{{ report.flight_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Zone:</span>
+                        <span class="font-medium capitalize">{{ report.zone }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Submitted By:</span>
+                        <span class="font-medium">{{ report.submitter.username }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Submission Date:</span>
+                        <span class="font-medium">{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Passenger Counts</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Paid:</span>
+                        <span class="font-medium">{{ report.paid }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Diplomats:</span>
+                        <span class="font-medium">{{ report.diplomats }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Infants:</span>
+                        <span class="font-medium">{{ report.infants }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Not Paid:</span>
+                        <span class="font-medium">{{ report.not_paid }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Paid Card/QR:</span>
+                        <span class="font-medium">{{ report.paid_card_qr }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Refunds:</span>
+                        <span class="font-medium">{{ report.refunds }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Deportees:</span>
+                        <span class="font-medium">{{ report.deportees }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Transit:</span>
+                        <span class="font-medium">{{ report.transit }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Waivers:</span>
+                        <span class="font-medium">{{ report.waivers }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Prepaid Bank:</span>
+                        <span class="font-medium">{{ report.prepaid_bank }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Round Trip:</span>
+                        <span class="font-medium">{{ report.round_trip }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Late Payment:</span>
+                        <span class="font-medium">{{ report.late_payment }}</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex justify-between">
+                        <span class="text-gray-800 font-semibold">Total Attended:</span>
+                        <span class="font-bold text-xl text-blue-600">{{ report.total_attended }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 class="text-lg font-medium text-gray-800 mb-3">Remarks</h3>
+            <p class="text-gray-700">{{ report.remarks or 'No remarks provided' }}</p>
+        </div>
+        
+        <form id="verificationForm" action="{{ url_for('data_analyst.verify_report', report_id=report.id) }}" method="POST" class="bg-white p-6 rounded-lg border border-gray-200">
+            {{ form.hidden_tag() }}
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Verification Data</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h4 class="text-md font-medium text-gray-700 mb-3">IICS Verification</h4>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">IICS Infant</label>
+                            {{ form.iics_infant(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0) }}
+                            {% if form.iics_infant.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.iics_infant.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">IICS Adult</label>
+                            {{ form.iics_adult(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0) }}
+                            {% if form.iics_adult.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.iics_adult.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">IICS Total</label>
+                            <input type="number" id="iics_total" class="mt-1 block w-full rounded-lg border-gray-300 bg-gray-100 shadow-sm transition-all" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-md font-medium text-gray-700 mb-3">GIA Verification</h4>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">GIA Infant</label>
+                            {{ form.gia_infant(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0) }}
+                            {% if form.gia_infant.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.gia_infant.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">GIA Adult</label>
+                            {{ form.gia_adult(class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all", min=0) }}
+                            {% if form.gia_adult.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.gia_adult.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">GIA Total</label>
+                            <input type="number" id="gia_total" class="mt-1 block w-full rounded-lg border-gray-300 bg-gray-100 shadow-sm transition-all" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-blue-700 mb-2">Verification Summary</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-blue-600">Total Attended:</span>
+                            <span class="font-bold">{{ report.total_attended }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-600">IICS Total:</span>
+                            <span class="font-bold" id="iics_total_display">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-600">GIA Total:</span>
+                            <span class="font-bold" id="gia_total_display">0</span>
+                        </div>
+                        <div class="pt-2 border-t border-blue-200">
+                            <div class="flex justify-between">
+                                <span class="text-blue-800 font-medium">IICS-Total Difference:</span>
+                                <span class="font-bold" id="iics_difference">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-800 font-medium">GIA-Total Difference:</span>
+                                <span class="font-bold" id="gia_difference">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{{ url_for('data_analyst.dashboard') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </a>
+                {{ form.submit(class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const iicsInfantInput = document.getElementById('iics_infant');
+        const iicsAdultInput = document.getElementById('iics_adult');
+        const iicsTotalInput = document.getElementById('iics_total');
+        const iicsTotalDisplay = document.getElementById('iics_total_display');
+        
+        const giaInfantInput = document.getElementById('gia_infant');
+        const giaAdultInput = document.getElementById('gia_adult');
+        const giaTotalInput = document.getElementById('gia_total');
+        const giaTotalDisplay = document.getElementById('gia_total_display');
+        
+        const iicsDifferenceDisplay = document.getElementById('iics_difference');
+        const giaDifferenceDisplay = document.getElementById('gia_difference');
+        
+        const totalAttended =  report.total_attended;
+        
+        function calculateTotals() {
+            // Calculate IICS total
+            const iicsInfant = parseInt(iicsInfantInput.value) || 0;
+            const iicsAdult = parseInt(iicsAdultInput.value) || 0;
+            const iicsTotal = iicsInfant + iicsAdult;
+            
+            iicsTotalInput.value = iicsTotal;
+            iicsTotalDisplay.textContent = iicsTotal;
+            iicsDifferenceDisplay.textContent = iicsTotal - totalAttended;
+            
+            // Calculate GIA total
+            const giaInfant = parseInt(giaInfantInput.value) || 0;
+            const giaAdult = parseInt(giaAdultInput.value) || 0;
+            const giaTotal = giaInfant + giaAdult;
+            
+            giaTotalInput.value = giaTotal;
+            giaTotalDisplay.textContent = giaTotal;
+            giaDifferenceDisplay.textContent = giaTotal - totalAttended;
+            
+            // Highlight differences
+            if (iicsTotal !== totalAttended) {
+                iicsDifferenceDisplay.classList.add('text-red-600');
+            } else {
+                iicsDifferenceDisplay.classList.remove('text-red-600');
+            }
+            
+            if (giaTotal !== totalAttended) {
+                giaDifferenceDisplay.classList.add('text-red-600');
+            } else {
+                giaDifferenceDisplay.classList.remove('text-red-600');
+            }
+        }
+        
+        // Add event listeners
+        iicsInfantInput.addEventListener('input', calculateTotals);
+        iicsAdultInput.addEventListener('input', calculateTotals);
+        giaInfantInput.addEventListener('input', calculateTotals);
+        giaAdultInput.addEventListener('input', calculateTotals);
+        
+        // Initial calculation
+        calculateTotals();
+        
+        // Form validation
+        document.getElementById('verificationForm').addEventListener('submit', function(e) {
+            const iicsInfant = parseInt(iicsInfantInput.value) || 0;
+            const iicsAdult = parseInt(iicsAdultInput.value) || 0;
+            const giaInfant = parseInt(giaInfantInput.value) || 0;
+            const giaAdult = parseInt(giaAdultInput.value) || 0;
+            
+            // Basic validation
+            if (iicsInfant < 0 || iicsAdult < 0 || giaInfant < 0 || giaAdult < 0) {
+                e.preventDefault();
+                alert('All values must be non-negative');
+                return;
+            }
+            
+            // Confirm submission
+            if (!confirm('Are you sure you want to verify this report? This action cannot be undone.')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
+>>>>>>> 98107f59a4616fd4b5fc6c38d9276c6029e43b1d
