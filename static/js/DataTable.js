@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 class DataTable {
   constructor(container) {
     this.container = container;
@@ -121,17 +120,12 @@ class DataTable {
 
     if (showVerification && this.currentUser && this.currentUser.role === 'dataAnalyst') {
       tableBody.addEventListener('click', (e) => {
-        console.log('Click event triggered on table body'); // Debug log
         if (e.target.classList.contains('edit-btn')) {
-          console.log('Edit button clicked'); // Debug log
           const row = e.target.closest('tr');
           const id = row.dataset.id;
-          console.log('Row ID:', id, 'Current User:', this.currentUser); // Debug log
           if (row && id && !row.dataset.verified) {
-            console.log('Enabling verification editing for report ID:', id); // Debug log
             this.enableVerificationEditing(row, id, onVerify);
           } else {
-            console.log('Cannot edit: Report is verified or row/ID not found'); // Debug log
             alert('This report is already verified or cannot be edited.');
           }
         }
@@ -144,7 +138,6 @@ class DataTable {
           const row = e.target.closest('tr');
           const id = row.dataset.id;
           const isActivated = row.dataset.canUpdate === 'true';
-          console.log('Update button clicked for:', { username: this.currentUser.username, activationDate: activation.date, isActivated }); // Debug log
           if (isActivated) {
             this.enableUpdateEditing(row, id, onUpdate);
           } else {
@@ -184,60 +177,33 @@ class DataTable {
         onDownload(this.data.filter(item => item.verified));
       });
     }
-
-    // Initialize filter button event listener
-    const filterBtn = document.getElementById('filterReports');
-    if (filterBtn) {
-      filterBtn.addEventListener('click', () => this.filterReports());
-    }
   }
 
   renderRows(data, showVerification, onUpdate) {
     if (data.length === 0) {
       return `<tr><td colspan="${showVerification ? 26 : 18}" class="px-0.5 py-0.5 text-center text-gray-500 sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">No data available</td></tr>`;
     }
-    const activation = JSON.parse(localStorage.getItem(storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
-    const selectedDate = activation.date;
 
     return data.map(item => `
-      <tr data-id="${item.id}" data-can-update="${selectedDate === item.date}" class="hover:bg-gray-50 transition-colors duration-150 ease-in-out">
-        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">${item.date}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${item.refNo || ''}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-          <div class="flex items-center">
-            <span class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center mr-2">
-              <i class="fas fa-user text-gray-500"></i>
-            </span>
-            ${item.supervisor}
-          </div>
-        </td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-          <div class="flex items-center">
-            <span class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
-              <i class="fas fa-plane text-blue-500"></i>
-            </span>
-            ${item.flightName || ''}
-          </div>
-        </td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm">
-          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.zone === 'arrival' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
-            ${item.zone}
-          </span>
-        </td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.paid) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.paid || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.diplomats) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.diplomats || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.infants) > 0 ? 'text-purple-600' : 'text-gray-500'}">${item.infants || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.notPaid) > 0 ? 'text-red-600' : 'text-gray-500'}">${item.notPaid || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.paidCardQr) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.paidCardQr || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.refunds) > 0 ? 'text-orange-600' : 'text-gray-500'}">${item.refunds || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.deportees) > 0 ? 'text-red-600' : 'text-gray-500'}">${item.deportees || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.transit) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.transit || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.waivers) > 0 ? 'text-purple-600' : 'text-gray-500'}">${item.waivers || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.prepaidBank) > 0 ? 'text-green-600' : 'text-gray-500'}">${item.prepaidBank || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.roundTrip) > 0 ? 'text-blue-600' : 'text-gray-500'}">${item.roundTrip || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${parseInt(item.latePayment) > 0 ? 'text-yellow-600' : 'text-gray-500'}">${item.latePayment || 0}</td>
-        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.totalAttended || 0}</td>
-        <td class="px-0.5 py-0.5 whitespace-normal sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.remarks || ''}</td>
+      <tr data-id="${item.id}" data-verified="${item.verified}" data-can-update="${storage.isUpdateActivated(this.currentUser?.username)}">
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.date}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refNo}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.supervisor}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.flightName || 'N/A'}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap capitalize sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.zone}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paid || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.diplomats || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.infants || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.notPaid || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paidCardQr || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refunds || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.deportees || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.transit || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.waivers || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.prepaidBank || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.roundTrip || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.latePayment || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.totalAttended || 0}</td>
         ${showVerification ? `
           <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
             <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left iics-infant sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.iicsInfant || 0}" placeholder="0">
@@ -279,592 +245,125 @@ class DataTable {
   }
 
   enableVerificationEditing(row, id, onVerify) {
-    if (!this.currentUser || this.currentUser.role !== 'dataAnalyst') {
-      alert('Only Data Analysts can edit and verify reports.');
-      return;
-    }
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const editBtn = row.querySelector('.edit-btn');
 
-    const report = storage.getReportById(id);
-    if (!report || report.verified) {
-      alert('This report is already verified or cannot be found.');
-      return;
-    }
+    inputs.forEach(input => {
+      input.removeAttribute('readonly');
+      input.classList.add('border-blue-500');
 
-    const cells = row.querySelectorAll('td');
-    const iicsInfantCell = cells[18];
-    const iicsAdultCell = cells[19];
-    const iicsTotalCell = cells[20];
-    const giaInfantCell = cells[21];
-    const giaAdultCell = cells[22];
-    const giaTotalCell = cells[23];
-    const actionCell = cells[25]; // Adjusted for Data Analyst edit
-
-    console.log('Enabling verification editing for row:', row, 'ID:', id); // Debug log
-
-    // Save original content with null checks and debug logs
-    const getInputValue = (cell, selector) => {
-      const input = cell.querySelector(selector);
-      console.log(`Querying ${selector} in cell:`, cell, 'Input found:', input); // Debug log
-      return input?.value || '0';
-    };
-
-    iicsInfantCell._originalContent = getInputValue(iicsInfantCell, '.iics-infant');
-    iicsAdultCell._originalContent = getInputValue(iicsAdultCell, '.iics-adult');
-    iicsTotalCell._originalContent = getInputValue(iicsTotalCell, '.iics-total');
-    giaInfantCell._originalContent = getInputValue(giaInfantCell, '.gia-infant');
-    giaAdultCell._originalContent = getInputValue(giaAdultCell, '.gia-adult');
-    giaTotalCell._originalContent = getInputValue(giaTotalCell, '.gia-total');
-
-    // Add event listeners for real-time total calculation with null checks and debug logs
-    const updateTotals = () => {
-      console.log('Updating totals for row:', row); // Debug log
-      const iicsInfantInput = iicsInfantCell.querySelector('.iics-infant');
-      const iicsAdultInput = iicsAdultCell.querySelector('.iics-adult');
-      const iicsTotalInput = iicsTotalCell.querySelector('.iics-total');
-      const giaInfantInput = giaInfantCell.querySelector('.gia-infant');
-      const giaAdultInput = giaAdultCell.querySelector('.gia-adult');
-      const giaTotalInput = giaTotalCell.querySelector('.gia-total');
-
-      console.log('Inputs found:', { iicsInfantInput, iicsAdultInput, iicsTotalInput, giaInfantInput, giaAdultInput, giaTotalInput }); // Debug log
-
-      const iicsInfant = Number(iicsInfantInput?.value) || 0;
-      const iicsAdult = Number(iicsAdultInput?.value) || 0;
-      const giaInfant = Number(giaInfantInput?.value) || 0;
-      const giaAdult = Number(giaAdultInput?.value) || 0;
-
-      if (iicsTotalInput) iicsTotalInput.value = iicsInfant + iicsAdult;
-      if (giaTotalInput) giaTotalInput.value = giaInfant + giaAdult;
-    };
-
-    // Add event listeners with null checks and debug logs
-    const addInputListener = (input, event, callback) => {
-      if (input) {
-        console.log(`Adding ${event} listener to input:`, input); // Debug log
-        input.addEventListener(event, callback);
-      } else {
-        console.log(`Input not found for event ${event}`); // Debug log
+      if (input.classList.contains('iics-infant') || input.classList.contains('iics-adult')) {
+        input.addEventListener('input', () => {
+          const iicsInfant = parseInt(row.querySelector('.iics-infant').value) || 0;
+          const iicsAdult = parseInt(row.querySelector('.iics-adult').value) || 0;
+          row.querySelector('.iics-total').value = iicsInfant + iicsAdult;
+        });
       }
+
+      if (input.classList.contains('gia-infant') || input.classList.contains('gia-adult')) {
+        input.addEventListener('input', () => {
+          const giaInfant = parseInt(row.querySelector('.gia-infant').value) || 0;
+          const giaAdult = parseInt(row.querySelector('.gia-adult').value) || 0;
+          row.querySelector('.gia-total').value = giaInfant + giaAdult;
+        });
+      }
+    });
+
+    editBtn.textContent = 'Save';
+    editBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    editBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+    const originalClickHandler = editBtn.onclick;
+    editBtn.onclick = async () => {
+      const verificationData = {
+        id,
+        iicsInfant: parseInt(row.querySelector('.iics-infant').value) || 0,
+        iicsAdult: parseInt(row.querySelector('.iics-adult').value) || 0,
+        iicsTotal: parseInt(row.querySelector('.iics-total').value) || 0,
+        giaInfant: parseInt(row.querySelector('.gia-infant').value) || 0,
+        giaAdult: parseInt(row.querySelector('.gia-adult').value) || 0,
+        giaTotal: parseInt(row.querySelector('.gia-total').value) || 0
+      };
+
+      await onVerify(verificationData);
+
+      inputs.forEach(input => {
+        input.setAttribute('readonly', true);
+        input.classList.remove('border-blue-500');
+      });
+
+      editBtn.textContent = 'Edit';
+      editBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+      editBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      editBtn.onclick = originalClickHandler;
     };
-
-    addInputListener(iicsInfantCell.querySelector('.iics-infant'), 'input', updateTotals);
-    addInputListener(iicsAdultCell.querySelector('.iics-adult'), 'input', updateTotals);
-    addInputListener(giaInfantCell.querySelector('.gia-infant'), 'input', updateTotals);
-    addInputListener(giaAdultCell.querySelector('.gia-adult'), 'input', updateTotals);
-
-    // Replace the Edit button with Save and Cancel buttons
-    actionCell.innerHTML = `
-      <div class="space-x-2 sm:space-x-1">
-        <button class="verify-btn px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 sm:px-3 sm:py-1 md:px-4 md:py-2 sm:text-sm md:text-base">
-          Verify
-        </button>
-        <button class="cancel-btn px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 sm:px-3 sm:py-1 md:px-4 md:py-2 sm:text-sm md:text-base">
-          Cancel
-        </button>
-      </div>
-    `;
-
-    // Add event listeners for Save and Cancel with null checks and debug logs
-    const verifyBtn = actionCell.querySelector('.verify-btn');
-    const cancelBtn = actionCell.querySelector('.cancel-btn');
-    const iicsInfantInput = iicsInfantCell.querySelector('.iics-infant');
-    const iicsAdultInput = iicsAdultCell.querySelector('.iics-adult');
-    const iicsTotalInput = iicsTotalCell.querySelector('.iics-total');
-    const giaInfantInput = giaInfantCell.querySelector('.gia-infant');
-    const giaAdultInput = giaAdultCell.querySelector('.gia-adult');
-    const giaTotalInput = giaTotalCell.querySelector('.gia-total');
-
-    console.log('Verify/Cancel Buttons and Inputs:', { verifyBtn, cancelBtn, iicsInfantInput, iicsAdultInput, iicsTotalInput, giaInfantInput, giaAdultInput, giaTotalInput }); // Debug log
-
-    if (verifyBtn) {
-      verifyBtn.addEventListener('click', () => {
-        console.log('Verify button clicked'); // Debug log
-        const iicsInfant = Number(iicsInfantInput?.value) || 0;
-        const iicsAdult = Number(iicsAdultInput?.value) || 0;
-        const iicsTotal = Number(iicsTotalInput?.value) || 0;
-        const giaInfant = Number(giaInfantInput?.value) || 0;
-        const giaAdult = Number(giaAdultInput?.value) || 0;
-        const giaTotal = Number(giaTotalInput?.value) || 0;
-
-        if (Object.keys(validation.validateIICSGIA(iicsInfant, iicsAdult, iicsTotal, giaInfant, giaAdult, giaTotal)).length > 0) {
-          alert('Please enter valid non-negative numbers and ensure totals match.');
-          return;
-        }
-
-        const report = storage.getReportById(id);
-        const totalAttended = report.totalAttended || 0;
-        const iicsTotalDifference = iicsTotal - totalAttended;
-        const giaTotalDifference = giaTotal - totalAttended;
-
-        if (Object.keys(validation.validateDifference(totalAttended, iicsTotal, giaTotal)).length > 0) {
-          this.showModal('Validation Error', 'Total Attended cannot be less than IICS or GIA Total.', () => {});
-          return;
-        }
-
-        if (confirm('Are you sure you want to verify this data?')) {
-          onVerify(id, { iicsInfant, iicsAdult, iicsTotal, giaInfant, giaAdult, giaTotal, iicsTotalDifference, giaTotalDifference });
-        }
-      });
-    } else {
-      console.log('Verify button not found'); // Debug log
-    }
-
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => {
-        console.log('Cancel button clicked'); // Debug log
-        // Restore original content with null checks
-        if (iicsInfantInput) iicsInfantInput.value = iicsInfantCell._originalContent;
-        if (iicsAdultInput) iicsAdultInput.value = iicsAdultCell._originalContent;
-        if (iicsTotalInput) iicsTotalInput.value = iicsTotalCell._originalContent;
-        if (giaInfantInput) giaInfantInput.value = giaInfantCell._originalContent;
-        if (giaAdultInput) giaAdultInput.value = giaAdultCell._originalContent;
-        if (giaTotalInput) giaTotalInput.value = giaTotalCell._originalContent;
-        actionCell.innerHTML = `
-          <button class="edit-btn px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm">
-            Edit
-          </button>
-        `;
-      });
-    } else {
-      console.log('Cancel button not found'); // Debug log
-    }
   }
 
   enableUpdateEditing(row, id, onUpdate) {
-    if (!this.currentUser || this.currentUser.role !== 'teamLead') {
-      alert('Only Team Leads can update reports.');
-      return;
-    }
-
-    const report = storage.getReportById(id);
-    if (!report) {
-      alert('Report not found.');
-      return;
-    }
-
-    if (report.verified) {
-      alert('Cannot update a verified report.');
-      return;
-    }
-
-    const activation = JSON.parse(localStorage.getItem(storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
-    if (!storage.isUpdateActivated(this.currentUser.username, activation.date)) {
-      alert('You do not have permission to update reports. Contact the Data Analyst for activation.');
-      return;
-    }
-
     const cells = row.querySelectorAll('td');
-    const actionCell = cells[cells.length - 1]; // Last cell contains the Update button
+    const updateBtn = row.querySelector('.update-btn');
+    const originalValues = {};
+    const editableCells = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; // Indices of editable cells
 
-    // Define editable columns (12 fields, starting after Date, Ref No, Supervisor, Flight Name, Zone)
-    const editableColumns = ['paid', 'diplomats', 'infants', 'notPaid', 'paidCardQr', 'refunds', 'deportees', 'transit', 'waivers', 'prepaidBank', 'roundTrip', 'latePayment'];
+    editableCells.forEach(index => {
+      const cell = cells[index];
+      const value = cell.textContent.trim();
+      originalValues[index] = value;
 
-    // Save original content and replace with smaller, readable inputs, starting after the first 5 columns
-    editableColumns.forEach((column, index) => {
-      const cell = cells[index + 5]; // Skip the first 5 columns (Date, Ref No, Supervisor, Flight Name, Zone)
-      cell._originalContent = cell.textContent || '0';
-      cell.innerHTML = `
-        <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${cell.textContent}">
-      `;
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.value = value;
+      input.className = 'w-full px-2 py-1 border rounded text-sm';
+
+      cell.textContent = '';
+      cell.appendChild(input);
     });
 
-    // Replace the Update button with Save and Cancel buttons
-    actionCell.innerHTML = `
-      <div class="space-x-2 sm:space-x-1">
-        <button class="save-btn px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 sm:px-3 sm:py-1 md:px-4 md:py-2 sm:text-sm md:text-base">
-          Save
-        </button>
-        <button class="cancel-btn px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 sm:px-3 sm:py-1 md:px-4 md:py-2 sm:text-sm md:text-base">
-          Cancel
-        </button>
-      </div>
-    `;
+    updateBtn.textContent = 'Save';
+    updateBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+    updateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
 
-    // Add event listeners for Save and Cancel
-    const saveBtn = actionCell.querySelector('.save-btn');
-    const cancelBtn = actionCell.querySelector('.cancel-btn');
+    const originalClickHandler = updateBtn.onclick;
+    updateBtn.onclick = async () => {
+      const updateData = {
+        id,
+        paid: parseInt(cells[5].querySelector('input').value) || 0,
+        diplomats: parseInt(cells[6].querySelector('input').value) || 0,
+        infants: parseInt(cells[7].querySelector('input').value) || 0,
+        notPaid: parseInt(cells[8].querySelector('input').value) || 0,
+        paidCardQr: parseInt(cells[9].querySelector('input').value) || 0,
+        refunds: parseInt(cells[10].querySelector('input').value) || 0,
+        deportees: parseInt(cells[11].querySelector('input').value) || 0,
+        transit: parseInt(cells[12].querySelector('input').value) || 0,
+        waivers: parseInt(cells[13].querySelector('input').value) || 0,
+        prepaidBank: parseInt(cells[14].querySelector('input').value) || 0,
+        roundTrip: parseInt(cells[15].querySelector('input').value) || 0,
+        latePayment: parseInt(cells[16].querySelector('input').value) || 0
+      };
 
-    saveBtn.addEventListener('click', () => {
-      const updatedData = {};
-      editableColumns.forEach((column, index) => {
-        const cell = cells[index + 5]; // Match the index offset used above
-        const input = cell.querySelector('input');
-        updatedData[column] = Number(input.value) || 0;
-      });
+      try {
+        await onUpdate(updateData);
 
-      const total = storage.calculateTotal(updatedData);
-      const totalAttended = total - Number(updatedData['refunds'] || 0); // Subtract refunds for total attended
-      const iicsTotal = total; // IICS Total includes all fields, including refunds
-      const giaTotal = totalAttended; // GIA Total matches total attended (excluding refunds)
+        editableCells.forEach(index => {
+          const cell = cells[index];
+          const input = cell.querySelector('input');
+          cell.textContent = input.value;
+        });
 
-      console.log('Updated Data Before Save:', updatedData, 'Total:', total, 'Total Attended:', totalAttended, 'IICS Total:', iicsTotal, 'GIA Total:', giaTotal); // Debug log
+        updateBtn.textContent = 'Update';
+        updateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        updateBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        updateBtn.onclick = originalClickHandler;
+      } catch (error) {
+        console.error('Error updating report:', error);
+        alert('Failed to update report. Please try again.');
 
-      const report = storage.getReportById(id);
-      const activation = JSON.parse(localStorage.getItem(storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
-      const selectedDate = activation.date;
-
-      if (!selectedDate || report.date !== selectedDate) {
-        alert('You can only update reports for the date activated by the Data Analyst.');
-        return;
+        editableCells.forEach(index => {
+          const cell = cells[index];
+          cell.textContent = originalValues[index];
+        });
       }
-
-      if (confirm('Are you sure you want to update this data?')) {
-        onUpdate(id, { ...updatedData, totalAttended, iicsTotal, giaTotal, iicsInfant: Number(updatedData.infants || 0), iicsAdult: iicsTotal - Number(updatedData.infants || 0), giaInfant: Number(updatedData.infants || 0), giaAdult: giaTotal - Number(updatedData.infants || 0), iicsTotalDifference: iicsTotal - totalAttended, giaTotalDifference: giaTotal - totalAttended });
-      }
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      // Restore original content
-      editableColumns.forEach((column, index) => {
-        const cell = cells[index + 5]; // Match the index offset used above
-        cell.innerHTML = cell._originalContent;
-      });
-      actionCell.innerHTML = `
-        <button class="update-btn px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm">
-          Update
-        </button>
-      `;
-    });
-  }
-
-  showModal(title, message, onConfirm) {
-    const modal = document.createElement('div');
-    modal.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    modal.innerHTML = `
-      <div class="modal-content bg-white p-6 rounded-lg shadow-lg max-w-md w-full sm:max-w-lg md:max-w-xl">
-        <h3 class="text-lg font-bold mb-4 sm:text-base md:text-lg">${title}</h3>
-        <p class="mb-4 sm:text-sm md:text-base">${message}</p>
-        <div class="flex justify-end gap-4">
-          <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-gray-800 sm:text-sm md:text-base">Cancel</button>
-          <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 sm:text-sm md:text-base" id="confirmBtn">Confirm</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    modal.querySelector('#confirmBtn').addEventListener('click', () => {
-      onConfirm();
-      document.body.removeChild(modal);
-    });
-
-    modal.querySelector('button:nth-child(1)').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-  }
-
-  filterReports() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const status = document.getElementById('verificationStatus').value;
-  
-    const filteredData = this.data.filter(report => {
-      const reportDate = new Date(report.date);
-      const isDateInRange = (!startDate || reportDate >= new Date(startDate)) &&
-                           (!endDate || reportDate <= new Date(endDate));
-      
-      const matchesStatus = status === 'all' ||
-                           (status === 'verified' && report.verified) ||
-                           (status === 'pending' && !report.verified);
-      
-      return isDateInRange && matchesStatus;
-    });
-  
-    const tableBody = this.container.querySelector('#tableBody');
-    tableBody.innerHTML = this.renderRows(filteredData, this.showVerification, this.onUpdate);
+    };
   }
 }
-=======
-class DataTable {
-  constructor(tableId, options = {}) {
-    this.tableId = tableId;
-    this.table = document.getElementById(tableId);
-    this.tableBody = this.table ? this.table.querySelector('tbody') : null;
-    this.options = {
-      showVerification: false,
-      canEdit: false,
-      canVerify: false,
-      canDownload: false,
-      ...options
-    };
-    
-    this.init();
-  }
-
-  init() {
-    if (!this.table) return;
-    
-    // Initialize filters
-    this.initFilters();
-    
-    // Initialize actions
-    this.initActions();
-    
-    // Initialize download button if applicable
-    if (this.options.canDownload) {
-      this.initDownload();
-    }
-  }
-
-  initFilters() {
-    const supervisorFilter = document.getElementById('supervisorFilter');
-    const flightFilter = document.getElementById('flightFilter');
-    const startDateFilter = document.getElementById('startDateFilter');
-    const endDateFilter = document.getElementById('endDateFilter');
-    
-    if (!supervisorFilter && !flightFilter && !startDateFilter && !endDateFilter) return;
-    
-    const filterFunction = () => {
-      if (!this.tableBody) return;
-      
-      const rows = this.tableBody.querySelectorAll('tr');
-      
-      rows.forEach(row => {
-        const supervisor = row.getAttribute('data-supervisor') || row.cells[2]?.textContent || '';
-        const flight = row.getAttribute('data-flight') || row.cells[3]?.textContent || '';
-        const date = row.getAttribute('data-date') || row.cells[0]?.textContent || '';
-        
-        // Apply filters
-        const matchesSupervisor = !supervisorFilter?.value || 
-                                 supervisor.toLowerCase().includes(supervisorFilter.value.toLowerCase());
-        const matchesFlight = !flightFilter?.value || 
-                             flight.toLowerCase().includes(flightFilter.value.toLowerCase());
-        
-        let matchesDate = true;
-        if (startDateFilter?.value && endDateFilter?.value) {
-          matchesDate = date >= startDateFilter.value && date <= endDateFilter.value;
-        } else if (startDateFilter?.value) {
-          matchesDate = date >= startDateFilter.value;
-        } else if (endDateFilter?.value) {
-          matchesDate = date <= endDateFilter.value;
-        }
-        
-        // Show/hide row
-        row.style.display = (matchesSupervisor && matchesFlight && matchesDate) ? '' : 'none';
-      });
-    };
-    
-    // Add event listeners
-    if (supervisorFilter) supervisorFilter.addEventListener('input', filterFunction);
-    if (flightFilter) flightFilter.addEventListener('input', filterFunction);
-    if (startDateFilter) startDateFilter.addEventListener('input', filterFunction);
-    if (endDateFilter) endDateFilter.addEventListener('input', filterFunction);
-  }
-
-  initActions() {
-    if (!this.tableBody) return;
-    
-    // Edit buttons
-    if (this.options.canEdit) {
-      this.tableBody.querySelectorAll('.update-report-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const reportId = btn.getAttribute('data-report-id');
-          this.openEditModal(reportId);
-        });
-      });
-    }
-    
-    // Verify buttons
-    if (this.options.canVerify) {
-      this.tableBody.querySelectorAll('.verify-report-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const reportId = btn.getAttribute('data-report-id');
-          window.location.href = `/data-analyst/reports/${reportId}/verify`;
-        });
-      });
-    }
-  }
-
-  initDownload() {
-    const downloadBtn = document.getElementById('downloadBtn');
-    if (!downloadBtn) return;
-    
-    downloadBtn.addEventListener('click', () => {
-      const supervisorFilter = document.getElementById('supervisorFilter')?.value || '';
-      const flightFilter = document.getElementById('flightFilter')?.value || '';
-      const startDateFilter = document.getElementById('startDateFilter')?.value || '';
-      const endDateFilter = document.getElementById('endDateFilter')?.value || '';
-      
-      // Build query params
-      const params = new URLSearchParams();
-      if (supervisorFilter) params.append('supervisor', supervisorFilter);
-      if (flightFilter) params.append('flight', flightFilter);
-      if (startDateFilter) params.append('start_date', startDateFilter);
-      if (endDateFilter) params.append('end_date', endDateFilter);
-      
-      // Redirect to download endpoint
-      window.location.href = `/cash-controller/download-csv?${params.toString()}`;
-    });
-  }
-
-  async openEditModal(reportId) {
-    try {
-      // Fetch report data
-      const response = await fetch(`/team-lead/api/reports?id=${reportId}`);
-      if (!response.ok) throw new Error('Failed to fetch report data');
-      
-      const data = await response.json();
-      
-      if (data.length === 0) throw new Error('Report not found');
-      
-      const report = data[0];
-      
-      // Get modal elements
-      const modal = document.getElementById('updateReportModal');
-      const modalBody = document.getElementById('updateReportModalBody');
-      
-      if (!modal || !modalBody) throw new Error('Modal elements not found');
-      
-      // Create form HTML
-      const formHtml = this.createEditForm(report, reportId);
-      modalBody.innerHTML = formHtml;
-      
-      // Initialize form events
-      this.initEditForm();
-      
-      // Show modal
-      new bootstrap.Modal(modal).show();
-      
-    } catch (error) {
-      console.error('Error opening edit modal:', error);
-      alert('Failed to load report data. Please try again.');
-    }
-  }
-
-  createEditForm(report, reportId) {
-    return `
-      <form id="updateReportForm" method="POST" action="/team-lead/reports/${reportId}/update">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="form-group">
-            <label for="paid">Paid</label>
-            <input type="number" id="paid" name="paid" class="form-control" value="${report.paid || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="diplomats">Diplomats</label>
-            <input type="number" id="diplomats" name="diplomats" class="form-control" value="${report.diplomats || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="infants">Infants</label>
-            <input type="number" id="infants" name="infants" class="form-control" value="${report.infants || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="not_paid">Not Paid</label>
-            <input type="number" id="not_paid" name="not_paid" class="form-control" value="${report.notPaid || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="paid_card_qr">Paid Card/QR</label>
-            <input type="number" id="paid_card_qr" name="paid_card_qr" class="form-control" value="${report.paidCardQr || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="refunds">Refunds</label>
-            <input type="number" id="refunds" name="refunds" class="form-control" value="${report.refunds || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="deportees">Deportees</label>
-            <input type="number" id="deportees" name="deportees" class="form-control" value="${report.deportees || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="transit">Transit</label>
-            <input type="number" id="transit" name="transit" class="form-control" value="${report.transit || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="waivers">Waivers</label>
-            <input type="number" id="waivers" name="waivers" class="form-control" value="${report.waivers || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="prepaid_bank">Prepaid Bank</label>
-            <input type="number" id="prepaid_bank" name="prepaid_bank" class="form-control" value="${report.prepaidBank || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="round_trip">Round Trip</label>
-            <input type="number" id="round_trip" name="round_trip" class="form-control" value="${report.roundTrip || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="late_payment">Late Payment</label>
-            <input type="number" id="late_payment" name="late_payment" class="form-control" value="${report.latePayment || 0}" min="0">
-          </div>
-        </div>
-        
-        <div class="mt-4">
-          <label>Total Attended:</label>
-          <span id="editTotalAttended" class="font-bold ml-2">0</span>
-        </div>
-        
-        <div class="form-group mt-4">
-          <label for="remarks">Remarks</label>
-          <textarea id="remarks" name="remarks" class="form-control" rows="3">${report.remarks || ''}</textarea>
-        </div>
-        
-        <div class="mt-4 flex justify-end space-x-2">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update Report</button>
-        </div>
-      </form>
-    `;
-  }
-
-  initEditForm() {
-    const form = document.getElementById('updateReportForm');
-    if (!form) return;
-    
-    const totalElement = document.getElementById('editTotalAttended');
-    
-    // Calculate total function
-    const calculateTotal = () => {
-      if (!totalElement) return;
-      
-      const formData = new FormData(form);
-      const sum = [
-        'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
-        'deportees', 'transit', 'waivers', 'prepaid_bank',
-        'round_trip', 'late_payment'
-      ].reduce((sum, field) => {
-        return sum + Number(formData.get(field) || 0);
-      }, 0);
-      
-      const refunds = Number(formData.get('refunds') || 0);
-      totalElement.textContent = sum - refunds;
-    };
-    
-    // Add event listeners
-    form.querySelectorAll('input[type="number"]').forEach(input => {
-      input.addEventListener('input', calculateTotal);
-    });
-    
-    // Initial calculation
-    calculateTotal();
-    
-    // Form submission
-    form.addEventListener('submit', (e) => {
-      if (!confirm('Are you sure you want to update this report? It will need to be verified again.')) {
-        e.preventDefault();
-      }
-    });
-  }
-}
-
-// Initialize data tables when document is ready
-document.addEventListener('DOMContentLoaded', function() {
-  // Team Lead reports table
-  if (document.getElementById('teamLeadReportsTable')) {
-    const isUpdateActivated = !!document.querySelector('[data-update-activated="true"]');
-    new DataTable('teamLeadReportsTable', {
-      canEdit: isUpdateActivated
-    });
-  }
-  
-  // Data Analyst reports table
-  if (document.getElementById('dataAnalystReportsTable')) {
-    new DataTable('dataAnalystReportsTable', {
-      showVerification: true,
-      canVerify: true,
-      canDownload: true
-    });
-  }
-  
-  // Cash Controller reports table
-  if (document.getElementById('cashControllerReportsTable')) {
-    new DataTable('cashControllerReportsTable', {
-      canDownload: true
-    });
-  }
-});
->>>>>>> 98107f59a4616fd4b5fc6c38d9276c6029e43b1d

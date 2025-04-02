@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Create a display element for real-time total
-    const totalDisplay = document.createElement('div');
-    totalDisplay.id = 'total-display';
-    totalDisplay.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 15px; background: #007bff; color: white; border-radius: 5px; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000;';
-    document.body.appendChild(totalDisplay);
+    // Get the total display element from the form footer
+    const totalDisplay = document.getElementById('total-display').querySelector('span');
 
     // Get all input fields that contribute to total attended
     const inputFields = [
@@ -24,24 +21,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to calculate and update total
     function updateTotalAttended() {
         let total = 0;
+        let refunds = 0;
         
-        // Sum up all input values
+        // Sum up all input values except refunds
         inputFields.forEach(fieldName => {
             const input = document.querySelector(`input[name="${fieldName}"]`);
-            if (input) {
+            if (input && fieldName !== 'refunds') {
                 const value = parseInt(input.value) || 0;
                 total += value;
+            } else if (input && fieldName === 'refunds') {
+                refunds = parseInt(input.value) || 0;
             }
         });
+
+        // Subtract refunds from total
+        const finalTotal = total - refunds;
 
         // Update both the form field and display element
         const totalAttendedInput = document.getElementById('total_attended');
         if (totalAttendedInput) {
-            totalAttendedInput.value = total;
+            totalAttendedInput.value = finalTotal;
         }
         
         // Update the display element with formatted total
-        totalDisplay.textContent = `Total Attended: ${total.toLocaleString()}`;
+        totalDisplay.textContent = finalTotal.toLocaleString();
         
         // Add a subtle animation
         totalDisplay.style.transform = 'scale(1.1)';
