@@ -1,5 +1,29 @@
-<<<<<<< HEAD
 /* Base styles for the cash collection report application */
+
+/* Login page styles */
+.login-container {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), url('../images/sp11.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+}
 
 /* Heading styles */
 h1 {
@@ -313,9 +337,6 @@ main {
   background-color: rgba(245, 158, 11, 0.1);
   color: #d97706;
 }
-=======
-/* Base styles for the cash collection report application */
-
 /* Override some Bootstrap styles for better aesthetics */
 :root {
   --primary-color: #3b82f6;
@@ -615,4 +636,3 @@ main {
   background-color: rgba(245, 158, 11, 0.1);
   color: #d97706;
 }
->>>>>>> 98107f59a4616fd4b5fc6c38d9276c6029e43b1d

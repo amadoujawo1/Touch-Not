@@ -2,9 +2,13 @@
 
 {% block title %}Login - Daily Cash Collection Report{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="min-h-[80vh] flex flex-col items-center justify-center px-4">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
+<div class="min-h-[80vh] flex flex-col items-center justify-center px-4 login-container">
+    <div class="w-full max-w-md rounded-xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl login-card">
         <div class="bg-primary/5 p-6 text-center border-b border-gray-200">
             <i class="fas fa-chart-line text-primary text-4xl mb-4"></i>
             <h1 class="text-2xl font-bold text-primary mb-2 transition-colors duration-200">
