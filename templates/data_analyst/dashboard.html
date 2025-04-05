@@ -44,46 +44,31 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
-        <h2 class="text-xl font-semibold mb-6">Analytics Dashboard</h2>
-        <!-- Chart Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="text-lg font-medium mb-2 text-gray-700">Passenger Trends</h3>
-                <canvas id="passengerTrendsChart"></canvas>
+        <h2 class="text-xl font-semibold mb-6">Real-Time Analytics Dashboard</h2>
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">Today's Total Passengers</h3>
+                <p class="text-2xl font-bold text-blue-600" id="todayTotalPassengers">0</p>
+                <p class="text-sm text-gray-500 mt-1">vs Yesterday: <span id="passengerChange" class="font-medium">0%</span></p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="text-lg font-medium mb-2 text-gray-700">Passenger Types Distribution</h3>
-                <canvas id="passengerTypesChart"></canvas>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">Verification Rate</h3>
+                <p class="text-2xl font-bold text-green-600" id="verificationRate">0%</p>
+                <p class="text-sm text-gray-500 mt-1">Total Reports: <span id="totalReports" class="font-medium">0</span></p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="text-lg font-medium mb-2 text-gray-700">Verification Status</h3>
-                <canvas id="verificationStatusChart"></canvas>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">Active Team Leads</h3>
+                <p class="text-2xl font-bold text-purple-600" id="activeTeamLeads">0</p>
+                <p class="text-sm text-gray-500 mt-1">Last 24 hours</p>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="text-lg font-medium mb-2 text-gray-700">Zone Distribution</h3>
-                <canvas id="zoneDistributionChart"></canvas>
+            <div class="bg-orange-50 p-4 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-600">Average Processing Time</h3>
+                <p class="text-2xl font-bold text-orange-600" id="avgProcessingTime">0m</p>
+                <p class="text-sm text-gray-500 mt-1">Per verification</p>
             </div>
         </div>
         
-        <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">IICS Total</h3>
-                <p class="text-2xl font-bold text-blue-600" id="iicsTotal">{{ iics_total|default('0') }}</p>
-            </div>
-            <div class="bg-green-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">GIA Total</h3>
-                <p class="text-2xl font-bold text-green-600" id="giaTotal">{{ gia_total|default('0') }}</p>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">IICS-Total Difference</h3>
-                <p class="text-2xl font-bold text-purple-600" id="iicsDiff">{{ iics_diff|default('0') }}</p>
-            </div>
-            <div class="bg-orange-50 p-4 rounded-lg">
-                <h3 class="text-sm font-medium text-gray-600">GIA-Total Difference</h3>
-                <p class="text-2xl font-bold text-orange-600" id="giaDiff">{{ gia_diff|default('0') }}</p>
-            </div>
-        </div>
-        <h2 class="text-xl font-semibold mb-4">Reports for Verification</h2>
         
         <div class="bg-white rounded-lg shadow mb-4">
             <div class="p-4 border-b">
@@ -133,7 +118,8 @@
                         <td class="py-2 px-4 border-b">{{ report.flight_name }}</td>
                         <td class="py-2 px-4 border-b">{{ report.zone }}</td>
                         <td class="py-2 px-4 border-b">{{ report.total_attended }}</td>
-                        <td class="py-2 px-4 border-b">{{ report.verified_date.strftime('%Y-%m-%d %H:%M') if report.verified_date else '' }}</td>
+                    
+                        <!-- <td class="py-2 px-4 border-b"> {{report.status}} {{ report.verified_date.strftime('%Y-%m-%d %H:%M') if report.verified_date else '' }}</td> -->
                         <td class="py-2 px-4 border-b">
                             {% if report.verified %}
                             <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>

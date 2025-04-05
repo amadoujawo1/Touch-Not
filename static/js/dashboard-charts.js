@@ -7,179 +7,193 @@ const chartColors = {
     borderBlue: 'rgb(59, 130, 246)',
     borderGreen: 'rgb(16, 185, 129)',
     borderPurple: 'rgb(139, 92, 246)',
-    borderOrange: 'rgb(249, 115, 22)'
+    borderOrange: 'rgb(249, 115, 22)',
+    lightBlue: 'rgba(59, 130, 246, 0.1)',
+    lightGreen: 'rgba(16, 185, 129, 0.1)',
+    lightPurple: 'rgba(139, 92, 246, 0.1)',
+    lightOrange: 'rgba(249, 115, 22, 0.1)'
+};
+
+// Utility functions
+const formatNumber = (num) => new Intl.NumberFormat().format(num);
+const formatPercent = (num) => `${Math.round(num * 100)}%`;
+const formatTime = (minutes) => `${minutes}m`;
+
+const updateSummaryCards = (data) => {
+    const elements = {
+        todayTotalPassengers: formatNumber(data.todayTotal),
+        passengerChange: formatPercent(data.passengerChange),
+        verificationRate: formatPercent(data.verificationRate),
+        totalReports: formatNumber(data.totalReports),
+        activeTeamLeads: formatNumber(data.activeTeamLeads),
+        avgProcessingTime: formatTime(data.avgProcessingTime),
+        lastUpdate: 'just now'
+    };
+
+    Object.entries(elements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    });
 };
 
 class DashboardCharts {
     constructor() {
         this.charts = {};
+        this.chartConfigs = {
+            passengerTrends: {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            },
+            passengerTypes: {
+                type: 'doughnut',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '70%'
+                }
+            },
+            verificationStatus: {
+                type: 'bar',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            }
+        };
+
         this.initializeCharts();
         this.setupAutoRefresh();
     }
 
     initializeCharts() {
-        this.initializePassengerTrendsChart();
-        this.initializePassengerTypesChart();
-        this.initializeVerificationStatusChart();
-        this.initializeZoneDistributionChart();
+        this.initializeChart('passengerTrends', {
+            labels: [],
+            datasets: [{
+                label: 'Hourly Flow',
+                data: [],
+                borderColor: chartColors.borderBlue,
+                backgroundColor: chartColors.lightBlue,
+                tension: 0.4,
+                fill: true
+            }]
+        });
+
+        this.initializeChart('passengerTypes', {
+            labels: ['IICS', 'GIA', 'Others'],
+            datasets: [{
+                data: [],
+                backgroundColor: [chartColors.blue, chartColors.green, chartColors.purple],
+                borderWidth: 0
+            }]
+        });
+
+        this.initializeChart('verificationStatus', {
+            labels: ['Verified', 'Pending'],
+            datasets: [{
+                data: [],
+                backgroundColor: [chartColors.green, chartColors.orange],
+                borderRadius: 6
+            }]
+        });
     }
 
-    async fetchChartData() {
+    initializeChart(chartId, chartData) {
+        const canvas = document.getElementById(`${chartId}Chart`);
+        if (!canvas) {
+            console.error(`Canvas element not found for chart: ${chartId}`);
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        const config = this.chartConfigs[chartId];
+        
+        this.charts[chartId] = new Chart(ctx, {
+            type: config.type,
+            data: chartData,
+            options: config.options
+        });
+    }
+
+    async fetchDashboardData() {
         try {
-            const response = await fetch('/data-analyst/chart-data');
+            const response = await fetch('/data-analyst/dashboard-data');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.json();
         } catch (error) {
-            console.error('Error fetching chart data:', error);
+            console.error('Error fetching dashboard data:', error);
             return null;
         }
     }
 
-    initializePassengerTrendsChart() {
-        const ctx = document.getElementById('passengerTrendsChart').getContext('2d');
-        this.charts.passengerTrends = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Total Passengers',
-                    data: [],
-                    borderColor: chartColors.borderBlue,
-                    backgroundColor: chartColors.blue,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Passenger Trends (Last 7 Days)'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-
-    initializePassengerTypesChart() {
-        const ctx = document.getElementById('passengerTypesChart').getContext('2d');
-        this.charts.passengerTypes = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['IICS', 'GIA', 'Others'],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [chartColors.blue, chartColors.green, chartColors.purple]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Passenger Types Distribution'
-                    }
-                }
-            }
-        });
-    }
-
-    initializeVerificationStatusChart() {
-        const ctx = document.getElementById('verificationStatusChart').getContext('2d');
-        this.charts.verificationStatus = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Verified', 'Pending'],
-                datasets: [{
-                    label: 'Reports Status',
-                    data: [],
-                    backgroundColor: [chartColors.green, chartColors.orange]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Verification Status'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-
-    initializeZoneDistributionChart() {
-        const ctx = document.getElementById('zoneDistributionChart').getContext('2d');
-        this.charts.zoneDistribution = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: []
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Zone Distribution'
-                    }
-                }
-            }
-        });
-    }
-
-    async updateCharts() {
-        const data = await this.fetchChartData();
+    updateCharts(data) {
         if (!data) return;
 
         // Update Passenger Trends
-        this.charts.passengerTrends.data.labels = data.trends.dates;
-        this.charts.passengerTrends.data.datasets[0].data = data.trends.counts;
-        this.charts.passengerTrends.update();
+        if (this.charts.passengerTrends) {
+            const trendData = data.hourlyFlow || [];
+            this.charts.passengerTrends.data.labels = trendData.map(item => item.hour);
+            this.charts.passengerTrends.data.datasets[0].data = trendData.map(item => item.total);
+            this.charts.passengerTrends.update();
+        }
 
         // Update Passenger Types
-        this.charts.passengerTypes.data.datasets[0].data = [
-            data.types.iics,
-            data.types.gia,
-            data.types.others
-        ];
-        this.charts.passengerTypes.update();
+        if (this.charts.passengerTypes && data.typeDistribution) {
+            const { iics, gia, others } = data.typeDistribution;
+            this.charts.passengerTypes.data.datasets[0].data = [iics, gia, others];
+            this.charts.passengerTypes.update();
+        }
 
         // Update Verification Status
-        this.charts.verificationStatus.data.datasets[0].data = [
-            data.verification.verified,
-            data.verification.pending
-        ];
-        this.charts.verificationStatus.update();
+        if (this.charts.verificationStatus && data.verificationStatus) {
+            const { verified, pending } = data.verificationStatus;
+            this.charts.verificationStatus.data.datasets[0].data = [verified, pending];
+            this.charts.verificationStatus.update();
+        }
+    }
 
-        // Update Zone Distribution
-        this.charts.zoneDistribution.data.labels = data.zones.labels;
-        this.charts.zoneDistribution.data.datasets[0].data = data.zones.counts;
-        this.charts.zoneDistribution.data.datasets[0].backgroundColor = 
-            data.zones.labels.map((_, i) => `hsl(${(i * 360) / data.zones.labels.length}, 70%, 60%)`);
-        this.charts.zoneDistribution.update();
+    async refreshDashboard() {
+        const data = await this.fetchDashboardData();
+        if (data) {
+            updateSummaryCards(data);
+            this.updateCharts(data);
+        }
     }
 
     setupAutoRefresh() {
-        // Update charts every 5 minutes
-        setInterval(() => this.updateCharts(), 5 * 60 * 1000);
+        // Initial update
+        this.refreshDashboard();
+        // Refresh every minute
+        setInterval(() => this.refreshDashboard(), 60000);
+    }
+
+    // Cleanup method to prevent memory leaks
+    destroy() {
+        Object.values(this.charts).forEach(chart => chart.destroy());
+        this.charts = {};
     }
 }
 
 // Initialize dashboard charts when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    const dashboardCharts = new DashboardCharts();
-    dashboardCharts.updateCharts();
+    window.dashboardCharts = new DashboardCharts();
 });

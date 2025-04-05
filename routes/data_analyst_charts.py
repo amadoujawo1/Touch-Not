@@ -6,48 +6,48 @@ from routes.data_analyst import data_analyst_required
 
 charts_bp = Blueprint('charts', __name__)
 
-@charts_bp.route('/data-analyst/chart-data')
+@charts_bp.route('/data-analyst/dashboard-data')
 @data_analyst_required
-def get_chart_data():
-    # Get the date range for the last 7 days
-    end_date = datetime.now().date()
-    start_date = end_date - timedelta(days=6)
+def get_dashboard_data():
+    now = datetime.now()
+    today = now.date()
+    yesterday = today - timedelta(days=1)
     
-    # Query data for passenger trends
-    trends_data = Report.query\
-        .with_entities(
-            func.date(Report.date).label('date'),
-            func.sum(Report.total_attended).label('total')
-        )\
-        .filter(Report.date >= start_date)\
-        .group_by(func.date(Report.date))\
-        .order_by(func.date(Report.date))\
-        .all()
+    # Get today's total passengers and comparison with yesterday
+    today_total = Report.query.with_entities(func.sum(Report.total_attended))\
+        .filter(func.date(Report.date) == today).scalar() or 0
+    yesterday_total = Report.query.with_entities(func.sum(Report.total_attended))\
+        .filter(func.date(Report.date) == yesterday).scalar() or 1  # Avoid division by zero
     
-    # Query data for passenger types
-    types_data = Report.query\
-        .with_entities(
-            func.sum(Report.iics_total).label('iics'),
-            func.sum(Report.gia_total).label('gia'),
-            func.sum(Report.total_attended - (Report.iics_total + Report.gia_total)).label('others')
-        )\
-        .filter(Report.date >= start_date, Report.verified == True)\
-        .first()
+    # Calculate verification rate
+    total_reports = Report.query.filter(func.date(Report.date) == today).count()
+    verified_reports = Report.query.filter(func.date(Report.date) == today, Report.verified == True).count()
     
-    # Query data for verification status
-    verification_data = Report.query\
-        .with_entities(
-            func.count(Report.id).filter(Report.verified == True).label('verified'),
-            func.count(Report.id).filter(Report.verified == False).label('pending')
-        )\
-        .filter(Report.date >= start_date)\
-        .first()
+    # Get active team leads in last 24 hours
+    active_team_leads = Report.query.with_entities(Report.supervisor)\
+        .filter(Report.date >= now - timedelta(hours=24))\
+        .distinct().count()
+    
+    # Calculate average processing time (mock data for now)
+    avg_processing_time = 15  # minutes
 
-    # Convert SQLAlchemy result to dict
-    verification_dict = {
-        'verified': int(verification_data.verified or 0),
-        'pending': int(verification_data.pending or 0)
+    # No hourly or type distribution data needed
+
+    # Prepare response data
+    response_data = {
+        'todayTotal': int(today_total),
+        'passengerChange': (today_total - yesterday_total) / yesterday_total,
+        'verificationRate': verified_reports / total_reports if total_reports > 0 else 0,
+        'totalReports': total_reports,
+        'activeTeamLeads': active_team_leads,
+        'avgProcessingTime': avg_processing_time,
+        'verificationStatus': {
+            'verified': verified_reports,
+            'pending': total_reports - verified_reports
+        }
     }
+
+    return jsonify(response_data)
     
     # Query data for zone distribution
     zone_data = Report.query\

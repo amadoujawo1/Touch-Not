@@ -122,7 +122,8 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
-        // Initialize inactivity timeout
+        // Initialize inactivity timeout only if user is authenticated
+        {% if current_user.is_authenticated %}
         let inactivityTimeout;
         let warningTimeout;
         let warningShown = false;
@@ -172,8 +173,16 @@
         document.addEventListener('click', resetInactivityTimeout);
         document.addEventListener('scroll', resetInactivityTimeout);
 
+        // Clear timeouts when user manually logs out
+        document.querySelector('a[href="{{ url_for("auth.logout") }}"]')?.addEventListener('click', function() {
+            clearTimeout(inactivityTimeout);
+            clearTimeout(warningTimeout);
+            hideTimeoutWarning();
+        });
+
         // Initial setup
         resetInactivityTimeout();
+        {% endif %}
     </script>
     
     {% block scripts %}
