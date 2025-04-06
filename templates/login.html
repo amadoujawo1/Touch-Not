@@ -42,7 +42,12 @@
                     <label for="password" class="block text-sm font-medium text-gray-700 sm:text-base">
                         <i class="fas fa-lock text-primary/80 mr-2"></i>Password
                     </label>
-                    {{ form.password(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base", placeholder="Enter your password") }}
+                    <div class="relative">
+                        {{ form.password(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm md:text-base pr-10", placeholder="Enter your password") }}
+                        <button type="button" class="absolute inset-y-0 right-0 mt-1 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" onclick="togglePasswordVisibility(this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     {% if form.password.errors %}
                     <div class="text-danger text-sm mt-1 flex items-start space-x-1">
                         <i class="fas fa-exclamation-circle mt-1"></i>
@@ -61,4 +66,23 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePasswordVisibility(button) {
+    const passwordInput = button.parentElement.querySelector('input');
+    const icon = button.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %}

@@ -3,10 +3,16 @@ class DataEntryForm {
     this.container = container;
     this.form = null;
     this.totalAttendedElement = null;
+    this.confirmationDialog = null;
     this.init();
   }
 
   async init() {
+    // Initialize confirmation dialog
+    if (typeof window.confirmationDialog === 'undefined') {
+      window.confirmationDialog = new ConfirmationDialog();
+    }
+    this.confirmationDialog = window.confirmationDialog;
     try {
       const response = await fetch('/api/flights-supervisors');
       const data = await response.json();
@@ -62,31 +68,34 @@ class DataEntryForm {
     const formData = Object.fromEntries(new FormData(this.form));
     
     if (this.validateForm(formData)) {
+      const totalAttended = this.calculateTotal(formData);
       const reportData = {
         ...formData,
-        totalAttended: this.calculateTotal(formData),
+        totalAttended,
         submittedBy: window.currentUser?.username,
         verified: false,
         date: new Date(formData.date).toISOString().split('T')[0]
       };
 
-      if (storage.saveReport(reportData)) {
-        alert('Report submitted successfully!');
-        this.form.reset();
-        // Trigger an immediate update of the DataTable
-        const dataTable = document.querySelector('#dataTableContainer');
-        if (dataTable) {
-          const reports = storage.getReports();
-          dataTable.render({
-            data: reports,
-            showVerification: false,
-            canDownload: true
-          });
+      // Show confirmation dialog with total attended count
+      window.confirmationDialog.show(totalAttended, () => {
+        if (storage.saveReport(reportData)) {
+          this.form.reset();
+          // Trigger an immediate update of the DataTable
+          const dataTable = document.querySelector('#dataTableContainer');
+          if (dataTable) {
+            const reports = storage.getReports();
+            dataTable.render({
+              data: reports,
+              showVerification: false,
+              canDownload: true
+            });
+          }
+          window.dispatchEvent(new CustomEvent('reportUpdated', { detail: reportData }));
+        } else {
+          alert('Failed to submit report. Please try again.');
         }
-        window.dispatchEvent(new CustomEvent('reportUpdated', { detail: reportData }));
-      } else {
-        alert('Failed to submit report. Please try again.');
-      }
+      });
     }
   }
 

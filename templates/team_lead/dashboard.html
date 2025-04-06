@@ -9,6 +9,7 @@
 {% block scripts %}
 {{ super() }}
 
+<script src="{{ url_for('static', filename='js/confirmation-dialog.js') }}"></script>
 <script src="{{ url_for('static', filename='js/DataEntryForm.js') }}"></script>
 <script src="{{ url_for('static', filename='js/team-lead-filters.js') }}"></script>
 <script src="{{ url_for('static', filename='js/total-attended-calculator.js') }}"></script>
@@ -161,6 +162,11 @@
                     </div>
                 </div>
             </form>
+            <div class="flex justify-end mt-4">
+                <a href="{{ url_for('team_lead.dashboard') }}" class="inline-flex items-center justify-center py-2 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all rounded-lg shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+            </div>
         </div>
     </div>
     
@@ -238,30 +244,20 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-6 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-3">
-                                    <a href="{{ url_for('team_lead.view_report', report_id=report.id) }}" 
-                                       class="text-blue-600 hover:text-blue-800 transition-colors" 
-                                       title="View Report">
-                                        <i class="fas fa-eye"></i>
+                            <td class="py-4 px-4 whitespace-nowrap text-sm">
+                                {% if not report.verified and is_update_activated %}
+                                <a href="{{ url_for('team_lead.edit_report', report_id=report.id) }}" 
+                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-edit mr-1"></i> Edit
+                                </a>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm">
+                                <div class="flex items-center space-x-4">
+                                    <a href="{{ url_for('team_lead.view_report', report_id=report.id) }}" class="inline-flex items-center px-2.5 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors rounded-md hover:bg-blue-50" title="View Details">
+                                        <i class="fas fa-eye mr-1"></i> View
                                     </a>
-                                    {% if not report.verified %}
-                                    <button type="button" 
-                                            onclick="window.location.href='#edit-modal-{{ report.id }}'" 
-                                            class="text-green-600 hover:text-green-800 transition-colors"
-                                            title="Edit Report">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <!-- Edit Modal -->
-                                    <div id="edit-modal-{{ report.id }}" class="modal">
-                                        <form action="{{ url_for('team_lead.update_report', report_id=report.id) }}" method="POST" class="edit-report-form bg-white rounded-lg shadow-xl p-6">
-                                            <!-- Add form fields here -->
-                                            <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                                                Update Report
-                                            </button>
-                                        </form>
-                                    </div>
-                                    {% endif %}
+                                    
                                 </div>
                             </td>
                         </tr>

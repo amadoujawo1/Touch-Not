@@ -1,5 +1,22 @@
 /* Base styles for the cash collection report application */
 
+/* CSS Variables for consistent theming */
+:root {
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --secondary-color: #64748b;
+    --danger-color: #ef4444;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
+    --info-color: #0ea5e9;
+    --text-main: #1f2937;
+    --text-light: #6b7280;
+    --border-color: #e5e7eb;
+    --box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --box-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --transition-base: all 0.2s ease-in-out;
+}
+
 /* Login page styles */
 .login-container {
     background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), url('../images/sp11.png');
@@ -14,15 +31,18 @@
 
 .login-card {
     backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 0.75rem;
+    box-shadow: var(--box-shadow-md);
     padding: 2rem;
-    transition: transform 0.3s ease;
+    transition: var(--transition-base);
+    width: 100%;
+    max-width: 28rem;
 }
 
 .login-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 /* Heading styles */

@@ -197,7 +197,31 @@ def update_report(report_id):
     flash('Report updated successfully. It will need to be verified again.', 'success')
     return redirect(url_for('team_lead.dashboard'))
 
-# Additional routes remain unchanged...
+@team_lead_bp.route('/reports/<int:report_id>/edit')
+@team_lead_required
+def edit_report(report_id):
+    report = Report.query.get_or_404(report_id)
+
+    if report.submitted_by_id != current_user.id:
+        flash('You do not have permission to edit this report.', 'danger')
+        return redirect(url_for('team_lead.dashboard'))
+
+    if report.verified:
+        flash('This report has already been verified and cannot be edited.', 'danger')
+        return redirect(url_for('team_lead.dashboard'))
+
+    # Check if the team lead is activated for updates
+    activation = TeamLeadActivation.query.filter_by(team_lead_id=current_user.id).order_by(TeamLeadActivation.id.desc()).first()
+    is_activated = False
+
+    if activation and activation.date == datetime.now().date():
+        is_activated = True
+
+    if not is_activated:
+        flash('You do not have permission to edit reports. Contact a Data Analyst for activation.', 'danger')
+        return redirect(url_for('team_lead.dashboard'))
+
+    return render_template('team_lead/edit_report.html', report=report)
 
 
 
@@ -233,7 +257,9 @@ def view_report(report_id):
         flash('You do not have permission to view this report.', 'danger')
         return redirect(url_for('team_lead.dashboard'))
     
-    return render_template('report_view.html', report=report)
+    from forms import VerificationForm
+    form = VerificationForm()
+    return render_template('report_view.html', report=report, form=form)
 
 # Delete functionality removed for team leads
 

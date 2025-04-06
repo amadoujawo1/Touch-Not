@@ -182,8 +182,44 @@ class DashboardCharts {
     setupAutoRefresh() {
         // Initial update
         this.refreshDashboard();
-        // Refresh every minute
+        
+        // Setup WebSocket connection for real-time updates
+        this.setupWebSocket();
+        
+        // Fallback refresh every minute in case WebSocket fails
         setInterval(() => this.refreshDashboard(), 60000);
+    }
+
+    setupWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/dashboard-updates`;
+        
+        this.ws = new WebSocket(wsUrl);
+        
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            updateSummaryCards(data);
+            this.updateCharts(data);
+        };
+        
+        this.ws.onclose = () => {
+            console.log('WebSocket connection closed. Attempting to reconnect...');
+            // Try to reconnect in 2 seconds
+            setTimeout(() => this.setupWebSocket(), 2000);
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            // Close the connection on error to trigger reconnect
+            this.ws.close();
+        };
+
+        // Ping server every 30 seconds to keep connection alive
+        this.pingInterval = setInterval(() => {
+            if (this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send('ping');
+            }
+        }, 30000);
     }
 
     // Cleanup method to prevent memory leaks

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Report - Daily Cash Collection Report{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <div class="mb-4">
+        <a href="{{ url_for('team_lead.dashboard') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-6">Edit Report</h2>
+        {% if report.verified %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+            <p>This report has been verified and cannot be edited. Please contact a Data Analyst if you need to make changes.</p>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('team_lead.update_report', report_id=report.id) }}" method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Read-only fields -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="text" value="{{ report.date.strftime('%Y-%m-%d') }}" class="w-full px-3 py-2 border rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reference No</label>
+                        <input type="text" value="{{ report.ref_no }}" class="w-full px-3 py-2 border rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Supervisor</label>
+                        <input type="text" value="{{ report.supervisor }}" class="w-full px-3 py-2 border rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Flight</label>
+                        <input type="text" value="{{ report.flight_name }}" class="w-full px-3 py-2 border rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
+                        <input type="text" value="{{ report.zone }}" class="w-full px-3 py-2 border rounded-md bg-gray-50" readonly>
+                    </div>
+                </div>
+
+                <!-- Editable passenger counts -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="paid" class="block text-sm font-medium text-gray-700 mb-1">Paid</label>
+                        <input type="number" id="paid" name="paid" value="{{ report.paid }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="diplomats" class="block text-sm font-medium text-gray-700 mb-1">Diplomats</label>
+                        <input type="number" id="diplomats" name="diplomats" value="{{ report.diplomats }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="infants" class="block text-sm font-medium text-gray-700 mb-1">Infants</label>
+                        <input type="number" id="infants" name="infants" value="{{ report.infants }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="not_paid" class="block text-sm font-medium text-gray-700 mb-1">Not Paid</label>
+                        <input type="number" id="not_paid" name="not_paid" value="{{ report.not_paid }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="paid_card_qr" class="block text-sm font-medium text-gray-700 mb-1">Paid Card/QR</label>
+                        <input type="number" id="paid_card_qr" name="paid_card_qr" value="{{ report.paid_card_qr }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="refunds" class="block text-sm font-medium text-gray-700 mb-1">Refunds</label>
+                        <input type="number" id="refunds" name="refunds" value="{{ report.refunds }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="deportees" class="block text-sm font-medium text-gray-700 mb-1">Deportees</label>
+                        <input type="number" id="deportees" name="deportees" value="{{ report.deportees }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="transit" class="block text-sm font-medium text-gray-700 mb-1">Transit</label>
+                        <input type="number" id="transit" name="transit" value="{{ report.transit }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="waivers" class="block text-sm font-medium text-gray-700 mb-1">Waivers</label>
+                        <input type="number" id="waivers" name="waivers" value="{{ report.waivers }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="prepaid_bank" class="block text-sm font-medium text-gray-700 mb-1">Prepaid Bank</label>
+                        <input type="number" id="prepaid_bank" name="prepaid_bank" value="{{ report.prepaid_bank }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="round_trip" class="block text-sm font-medium text-gray-700 mb-1">Round Trip</label>
+                        <input type="number" id="round_trip" name="round_trip" value="{{ report.round_trip }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                    <div>
+                        <label for="late_payment" class="block text-sm font-medium text-gray-700 mb-1">Late Payment</label>
+                        <input type="number" id="late_payment" name="late_payment" value="{{ report.late_payment }}" class="w-full px-3 py-2 border rounded-md" {% if report.verified %}disabled{% endif %}>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="remarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <textarea id="remarks" name="remarks" rows="3" class="w-full px-3 py-2 border rounded-md">{{ report.remarks }}</textarea>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{{ url_for('team_lead.dashboard') }}" class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input[type="number"]');
+
+    // Add input event listeners for real-time validation
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validateInput(this);
+        });
+    });
+
+    function validateInput(input) {
+        const value = parseInt(input.value);
+        if (isNaN(value) || value < 0) {
+            input.classList.add('border-red-500');
+            input.setCustomValidity('Value must be a non-negative number');
+        } else {
+            input.classList.remove('border-red-500');
+            input.setCustomValidity('');
+        }
+    }
+
+    form.addEventListener('submit', function(e) {
+        let hasErrors = false;
+
+        // Validate all inputs
+        inputs.forEach(input => {
+            validateInput(input);
+            if (input.validity.customError) {
+                hasErrors = true;
+            }
+        });
+
+        if (hasErrors) {
+            e.preventDefault();
+            alert('Please correct all errors before submitting. All values must be non-negative numbers.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to update this report? The report will need to be verified again.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
