@@ -1,6 +1,8 @@
 # Ingore environement files
 .env/
 env9/
+.idea/
+
 
 # Ignore cache folder and python compiled files
 *.pyc

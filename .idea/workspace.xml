@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb0d0de5-fabd-441b-aa2d-a884e86c27b1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Touch-Not.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Touch-Not.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +40,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.Touch-Not.executor": "Run",
+    "Python.admin.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
@@ -93,6 +95,7 @@
       <option name="presentableId" value="Default" />
       <updated>1743087363562</updated>
       <workItem from="1743087368131" duration="874000" />
+      <workItem from="1744016706189" duration="424000" />
     </task>
     <servers />
   </component>
@@ -100,6 +103,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Touch_Not$Touch_Not.coverage" NAME="Touch-Not Coverage Results" MODIFIED="1743511381053" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/Touch_Not$admin.coverage" NAME="admin Coverage Results" MODIFIED="1744016899254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/routes" />
+    <SUITE FILE_PATH="coverage/Touch_Not$Touch_Not.coverage" NAME="Touch-Not Coverage Results" MODIFIED="1743512142083" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
