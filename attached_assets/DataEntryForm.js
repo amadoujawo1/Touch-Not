@@ -186,7 +186,8 @@ class DataEntryForm {
         return;
       }
 
-      this.showModal('Confirm Submission', 'Are you sure you want to submit this data? Once submitted, you cannot edit it.', () => {
+      // Use the confirmation dialog component
+      window.confirmationDialog.show(formData.totalAttended, () => {
         onSubmit(formData);
       });
     });

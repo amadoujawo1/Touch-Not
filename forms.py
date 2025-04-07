@@ -1,8 +1,8 @@
+# forms.py
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, DateField, IntegerField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
 import re
-
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -46,7 +46,19 @@ class RegisterForm(FlaskForm):
         if not re.search(r'[@$!%*?&]', password):
             raise ValidationError('Password must contain at least one special character (@$!%*?&)')
 
-    def validate_password(self, field):
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[
+        DataRequired(),
+        Length(min=8, message='Password must be at least 8 characters long')
+    ])
+    confirm_password = PasswordField('Confirm New Password', validators=[
+        DataRequired(),
+        EqualTo('new_password', message='Passwords must match')
+    ])
+    submit = SubmitField('Change Password')
+    
+    def validate_new_password(self, field):
         password = field.data
         if not re.search(r'[A-Z]', password):
             raise ValidationError('Password must contain at least one uppercase letter')
@@ -57,11 +69,13 @@ class RegisterForm(FlaskForm):
         if not re.search(r'[@$!%*?&]', password):
             raise ValidationError('Password must contain at least one special character (@$!%*?&)')
 
+from wtforms import SelectField
+
 class ReportForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     ref_no = StringField('Reference Number', validators=[DataRequired()])
-    supervisor = SelectField('Supervisor', validators=[DataRequired()])
-    flight = SelectField('Flight', validators=[DataRequired()])
+    supervisor = SelectField('Supervisor', choices=[], validators=[DataRequired()])
+    flight = SelectField('Flight', choices=[], validators=[DataRequired()])
     zone = SelectField('Zone', choices=[
         ('', 'Select zone'),
         ('arrival', 'Arrival'),
@@ -69,6 +83,7 @@ class ReportForm(FlaskForm):
     ], validators=[DataRequired()])
     
     # Passenger counts
+    total_attended = IntegerField('Total Attended', default=0, validators=[NumberRange(min=0)])
     paid = IntegerField('Paid', default=0, validators=[NumberRange(min=0)])
     diplomats = IntegerField('Diplomats', default=0, validators=[NumberRange(min=0)])
     infants = IntegerField('Infants', default=0, validators=[NumberRange(min=0)])

@@ -3,6 +3,7 @@
 {% block title %}Data Analyst Dashboard - Daily Cash Collection Report{% endblock %}
 
 {% block content %}
+<div class="p-6 bg-gray-50">
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-1">
         <h2 class="text-xl font-semibold mb-4">Activate Team Lead Update</h2>
@@ -27,8 +28,11 @@
             {% if recent_activations %}
             <ul class="space-y-2">
                 {% for activation in recent_activations %}
-                <li class="p-2 bg-gray-50 rounded flex justify-between">
-                    <span>{{ activation.team_lead.username }}</span>
+                <li class="p-2 bg-gray-50 rounded flex justify-between items-center">
+                    <div>
+                        <span class="font-medium">{{ activation.team_lead.username }}</span>
+                        <span class="text-sm text-gray-500 ml-2">(Activated by: {{ activation.activated_by.username }})</span>
+                    </div>
                     <span class="text-gray-500">{{ activation.date.strftime('%Y-%m-%d') }}</span>
                 </li>
                 {% endfor %}
@@ -40,22 +44,30 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
-        <h2 class="text-xl font-semibold mb-4">Reports for Verification</h2>
-        
-        <div class="flex flex-wrap gap-4 p-4 bg-white rounded-lg shadow mb-4">
-            <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
-            <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md">
-            <div class="flex-1 min-w-[200px] flex items-center">
-                <label for="startDateFilter" class="mr-2 text-gray-700">Start Date:</label>
-                <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+
+        <div class="bg-white rounded-lg shadow mb-4">
+            <div class="p-4 border-b">
+                <h3 class="text-lg font-medium text-gray-700">Filter Reports</h3>
+                <p class="text-sm text-gray-500" id="filterSummary"></p>
             </div>
-            <div class="flex-1 min-w-[200px] flex items-center">
-                <label for="endDateFilter" class="mr-2 text-gray-700">End Date:</label>
-                <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md">
+            <div class="flex flex-wrap gap-4 p-4">
+                <input type="text" id="supervisorFilter" placeholder="Filter by Supervisor" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" id="flightFilter" placeholder="Filter by Flight Name" class="flex-1 min-w-[200px] px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="startDateFilter" class="mr-2 text-gray-700">Start Date:</label>
+                    <input type="date" id="startDateFilter" class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex-1 min-w-[200px] flex items-center">
+                    <label for="endDateFilter" class="mr-2 text-gray-700">End Date:</label>
+                    <input type="date" id="endDateFilter" class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button id="downloadBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-150 ease-in-out flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download Report (Verified Only)
+                </button>
             </div>
-            <button id="downloadBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
-                Download Report (Verified Only)
-            </button>
         </div>
         
         <div class="overflow-x-auto">
@@ -81,6 +93,8 @@
                         <td class="py-2 px-4 border-b">{{ report.flight_name }}</td>
                         <td class="py-2 px-4 border-b">{{ report.zone }}</td>
                         <td class="py-2 px-4 border-b">{{ report.total_attended }}</td>
+                    
+                        <!-- <td class="py-2 px-4 border-b"> {{report.status}} {{ report.verified_date.strftime('%Y-%m-%d %H:%M') if report.verified_date else '' }}</td> -->
                         <td class="py-2 px-4 border-b">
                             {% if report.verified %}
                             <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>
@@ -105,12 +119,49 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard-charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/verification-summary.js') }}"></script>
 <script>
     // Filtering functionality
     const supervisorFilter = document.getElementById('supervisorFilter');
     const flightFilter = document.getElementById('flightFilter');
     const startDateFilter = document.getElementById('startDateFilter');
     const endDateFilter = document.getElementById('endDateFilter');
+    
+    // Function to update verification totals
+    function updateVerificationTotals() {
+        fetch('/data-analyst/verification-totals')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('iicsTotal').textContent = data.iics_total || '0';
+                document.getElementById('giaTotal').textContent = data.gia_total || '0';
+                document.getElementById('iicsDiff').textContent = data.iics_diff || '0';
+                document.getElementById('giaDiff').textContent = data.gia_diff || '0';
+            })
+            .catch(error => console.error('Error updating totals:', error));
+    }
+
+    // Update totals when a report is verified
+    document.querySelectorAll('a[href*="verify_report"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(this.href)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('tr').querySelector('td:nth-last-child(2)').innerHTML =
+                            '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Verified</span>';
+                        this.parentElement.innerHTML = '';
+                        updateVerificationTotals();
+                    }
+                })
+                .catch(error => console.error('Error verifying report:', error));
+        });
+    });
+
+    // Initial update of totals
+    updateVerificationTotals();
     
     function filterTable() {
         const rows = document.querySelectorAll('#reportTableBody tr');
@@ -155,7 +206,7 @@
         if (endDateFilter.value) params.append('end_date', endDateFilter.value);
         
         // Redirect to download URL
-        window.location.href = `/cash-controller/download-csv?${params.toString()}`;
+        window.location.href = `/data-analyst/download-csv?${params.toString()}`;
     });
 </script>
 {% endblock %}

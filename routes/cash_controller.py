@@ -25,13 +25,11 @@ def dashboard():
 @cash_controller_bp.route('/download-csv')
 @cash_controller_required
 def download_csv():
-    # Get filter parameters
     supervisor = request.args.get('supervisor', '')
     flight = request.args.get('flight', '')
     start_date = request.args.get('start_date', '')
     end_date = request.args.get('end_date', '')
     
-    # Build query with filters
     query = Report.query.filter_by(verified=True)
     
     if supervisor:
@@ -48,7 +46,6 @@ def download_csv():
     
     reports = query.order_by(Report.date.desc()).all()
     
-    # Export reports to CSV
     if not reports:
         return "No data to export", 404
     
@@ -58,13 +55,11 @@ def download_csv():
 @cash_controller_bp.route('/api/reports')
 @cash_controller_required
 def get_reports():
-    # Get filter parameters
     supervisor = request.args.get('supervisor', '')
     flight = request.args.get('flight', '')
     start_date = request.args.get('start_date', '')
     end_date = request.args.get('end_date', '')
     
-    # Build query with filters
     query = Report.query.filter_by(verified=True)
     
     if supervisor:

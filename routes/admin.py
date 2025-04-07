@@ -52,7 +52,7 @@ def manage_users():
 def activate_user(user_id):
     user = User.query.get_or_404(user_id)
     user.active = True
-    current_app.db.session.commit()
+    db.session.commit()
     flash(f'User {user.username} has been activated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -63,9 +63,11 @@ def deactivate_user(user_id):
     if user.username == 'admin':
         flash('Cannot deactivate admin user.', 'danger')
     else:
-        user.active = False
-        current_app.db.session.commit()
-        flash(f'User {user.username} has been deactivated.', 'success')
+        user.active = not user.active
+        db.session.commit()
+        
+        status = 'activated' if user.active else 'deactivated'
+        flash(f'User {user.username} has been {status}.', 'success')
     return redirect(url_for('admin.manage_users'))
 
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
@@ -75,8 +77,8 @@ def delete_user(user_id):
     if user.username == 'admin':
         flash('Cannot delete admin user.', 'danger')
     else:
-        current_app.db.session.delete(user)
-        current_app.db.session.commit()
+        db.session.delete(user)
+        db.session.commit()
         flash(f'User {user.username} has been deleted.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -108,7 +110,6 @@ def manage_flights_supervisors():
                           form=form)
 
 @admin_bp.route('/flights', methods=['POST'])
-
 @admin_required
 def add_flight():
     flight_name = request.form.get('flight_name')
