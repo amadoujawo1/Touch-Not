@@ -52,6 +52,7 @@ def login():
             flash('Invalid password. Please try again.', 'danger')
         else:
             login_user(user)
+            
             # Check if user's role is compatible with the requested page
             next_page = request.args.get('next')
             if next_page:
@@ -79,6 +80,27 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password_hash, form.current_password.data):
+            flash('Current password is incorrect.', 'danger')
+            return render_template('change_password.html', form=form)
+            
+        if form.new_password.data != form.confirm_password.data:
+            flash('New password and confirmation do not match.', 'danger')
+            return render_template('change_password.html', form=form)
+            
+        current_user.password_hash = generate_password_hash(form.new_password.data)
+        db.session.commit()
+        
+        flash('Your password has been updated successfully.', 'success')
+        return redirect(url_for('auth.index'))
+        
+    return render_template('change_password.html', form=form)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 @login_required

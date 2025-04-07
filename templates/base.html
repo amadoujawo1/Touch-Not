@@ -130,11 +130,9 @@
         // Initialize inactivity timeout only if user is authenticated
         // {% if current_user.is_authenticated %}
         let inactivityTimeout;
-        let warningTimeout;
         let countdownInterval;
         let warningShown = false;
-        const TIMEOUT_DURATION = 120000; // 2 minutes in milliseconds
-        const WARNING_DURATION = 30000; // 30 seconds warning before timeout
+        const TIMEOUT_DURATION = 20000; // 20 seconds timeout
 
         function updateCountdown(secondsLeft) {
             const countdownElement = document.getElementById('countdownTimer');
@@ -149,7 +147,7 @@
             warningShown = true;
         
             // Start countdown timer
-            let secondsLeft = WARNING_DURATION / 1000;
+            let secondsLeft = 30; // Set to 30 seconds for better user experience
             updateCountdown(secondsLeft);
         
             countdownInterval = setInterval(() => {
@@ -179,46 +177,51 @@
 
         function cancelTimeout() {
             hideTimeoutWarning();
-            clearTimeout(warningTimeout);
+            // Reset the inactivity timer
             resetInactivityTimeout();
         }
 
         function confirmTimeout() {
             clearTimeout(inactivityTimeout);
-            clearTimeout(warningTimeout);
             clearInterval(countdownInterval);
+            
             // Show loading state
-            const logoutBtn = event.target.closest('button');
+            const logoutBtn = event.target ? event.target.closest('button') : null;
             if (logoutBtn) {
                 logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Logging out...';
                 logoutBtn.disabled = true;
             }
-            // Clear all session storage
+            
+            // Clear all session storage and local storage
             sessionStorage.clear();
             localStorage.clear();
-            // Play a notification sound for logout
+            
+            // Play a notification sound for logout if available
             const audio = new Audio('/static/sounds/logout.mp3');
             audio.play().catch(e => console.log('Audio play failed:', e));
+            
             // Vibrate device if supported
             if ('vibrate' in navigator) {
                 navigator.vibrate([400]);
             }
-            // Redirect to logout after a short delay to allow for animations
-            setTimeout(() => {
-                window.location.href = "{{ url_for('auth.logout', timeout='true') }}";
-            }, 500);
+            
+            // Immediately redirect to login page
+            window.location.href = "{{ url_for('auth.login') }}";
+            
+            // Make an async call to logout endpoint
+            fetch("{{ url_for('auth.logout', timeout='true') }}", {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).catch(error => console.log('Logout request failed:', error));
         }
 
         function resetInactivityTimeout() {
             if (!warningShown) {
                 clearTimeout(inactivityTimeout);
-                clearTimeout(warningTimeout);
+                // Set the inactivity timer to 2 minutes (120000ms)
                 inactivityTimeout = setTimeout(() => {
                     showTimeoutWarning();
-                    warningTimeout = setTimeout(() => {
-                        confirmTimeout();
-                    }, WARNING_DURATION);
-                }, TIMEOUT_DURATION - WARNING_DURATION);
+                }, 120000);
             }
         }
 
@@ -231,7 +234,7 @@
         // Clear timeouts when user manually logs out
         document.querySelector('a[href="{{ url_for("auth.logout") }}"]')?.addEventListener('click', function() {
             clearTimeout(inactivityTimeout);
-            clearTimeout(warningTimeout);
+            // Reset the inactivity timer
             clearInterval(countdownInterval);
             hideTimeoutWarning();
         });

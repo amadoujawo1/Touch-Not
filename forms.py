@@ -47,7 +47,7 @@ class RegisterForm(FlaskForm):
             raise ValidationError('Password must contain at least one special character (@$!%*?&)')
 
 class ChangePasswordForm(FlaskForm):
-    current_password = PasswordField('Current Password')
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
     new_password = PasswordField('New Password', validators=[
         DataRequired(),
         Length(min=8, message='Password must be at least 8 characters long')
