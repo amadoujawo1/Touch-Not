@@ -9,7 +9,12 @@ class DataEntryForm {
 
   async init() {
     // Initialize confirmation dialog
-    if (typeof window.confirmationDialog === 'undefined') {
+    if (!window.confirmationDialog) {
+      // Ensure ConfirmationDialog class is loaded
+      if (typeof ConfirmationDialog === 'undefined') {
+        console.error('ConfirmationDialog class not found');
+        return;
+      }
       window.confirmationDialog = new ConfirmationDialog();
     }
     this.confirmationDialog = window.confirmationDialog;
@@ -77,24 +82,45 @@ class DataEntryForm {
         date: new Date(formData.date).toISOString().split('T')[0]
       };
 
+      // Always show confirmation dialog before submitting
+      if (!window.confirmationDialog) {
+        console.error('Confirmation dialog not initialized');
+        return;
+      }
+      
       // Show confirmation dialog with total attended count
       window.confirmationDialog.show(totalAttended, () => {
-        if (storage.saveReport(reportData)) {
-          this.form.reset();
-          // Trigger an immediate update of the DataTable
-          const dataTable = document.querySelector('#dataTableContainer');
-          if (dataTable) {
-            const reports = storage.getReports();
-            dataTable.render({
-              data: reports,
-              showVerification: false,
-              canDownload: true
-            });
+        // Submit the form data to the server
+        fetch(this.form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(reportData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.form.reset();
+            // Update the DataTable if it exists
+            const dataTable = document.querySelector('#dataTableContainer');
+            if (dataTable) {
+              const reports = storage.getReports();
+              dataTable.render({
+                data: reports,
+                showVerification: false,
+                canDownload: true
+              });
+            }
+            window.dispatchEvent(new CustomEvent('reportUpdated', { detail: reportData }));
+          } else {
+            alert(data.message || 'Failed to submit report. Please try again.');
           }
-          window.dispatchEvent(new CustomEvent('reportUpdated', { detail: reportData }));
-        } else {
+        })
+        .catch(error => {
+          console.error('Error:', error);
           alert('Failed to submit report. Please try again.');
-        }
+        })
       });
     }
   }

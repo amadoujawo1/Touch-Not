@@ -162,11 +162,11 @@
                     </div>
                 </div>
             </form>
-            <div class="flex justify-end mt-4">
+            <!-- <div class="flex justify-end mt-4">
                 <a href="{{ url_for('team_lead.dashboard') }}" class="inline-flex items-center justify-center py-2 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all rounded-lg shadow-sm">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
                 </a>
-            </div>
+            </div> -->
         </div>
     </div>
     
@@ -244,20 +244,17 @@
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-4 whitespace-nowrap text-sm">
-                                {% if not report.verified and is_update_activated %}
-                                <a href="{{ url_for('team_lead.edit_report', report_id=report.id) }}" 
-                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
-                                    <i class="fas fa-edit mr-1"></i> Edit
-                                </a>
-                                {% endif %}
-                            </td>
                             <td class="py-4 px-6 whitespace-nowrap text-sm">
                                 <div class="flex items-center space-x-4">
+                                    {% if not report.verified and is_update_activated %}
+                                    <a href="{{ url_for('team_lead.edit_report', report_id=report.id) }}" 
+                                       class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </a>
+                                    {% endif %}
                                     <a href="{{ url_for('team_lead.view_report', report_id=report.id) }}" class="inline-flex items-center px-2.5 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors rounded-md hover:bg-blue-50" title="View Details">
                                         <i class="fas fa-eye mr-1"></i> View
                                     </a>
-                                    
                                 </div>
                             </td>
                         </tr>

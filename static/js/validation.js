@@ -43,7 +43,7 @@ class ValidationUtils {
 
     numericFields.forEach(({ field, message }) => {
       const value = Number(data[field]);
-      if (isNaN(value) || value < 0) {
+      if (value === undefined || value === null || isNaN(value) || value < 0) {
         errors[field] = message;
       }
     });
@@ -65,13 +65,18 @@ class ValidationUtils {
     const errors = {};
 
     // Validate IICS fields
-    if (iicsInfant === undefined || isNaN(iicsInfant) || iicsInfant < 0) {
-      errors.iicsInfant = 'IICS Infant must be a non-negative number';
-    }
-    
-    if (iicsAdult === undefined || isNaN(iicsAdult) || iicsAdult < 0) {
-      errors.iicsAdult = 'IICS Adult must be a non-negative number';
-    }
+    const validateNumber = (value, field) => {
+      if (value === undefined || value === null || isNaN(value) || value < 0) {
+        return `${field} must be a non-negative number`;
+      }
+      return null;
+    };
+
+    const iicsInfantError = validateNumber(iicsInfant, 'IICS Infant');
+    if (iicsInfantError) errors.iicsInfant = iicsInfantError;
+
+    const iicsAdultError = validateNumber(iicsAdult, 'IICS Adult');
+    if (iicsAdultError) errors.iicsAdult = iicsAdultError;
     
     const calculatedIICSTotal = Number(iicsInfant || 0) + Number(iicsAdult || 0);
     if (iicsTotal !== calculatedIICSTotal) {
@@ -79,13 +84,11 @@ class ValidationUtils {
     }
 
     // Validate GIA fields
-    if (giaInfant === undefined || isNaN(giaInfant) || giaInfant < 0) {
-      errors.giaInfant = 'GIA Infant must be a non-negative number';
-    }
-    
-    if (giaAdult === undefined || isNaN(giaAdult) || giaAdult < 0) {
-      errors.giaAdult = 'GIA Adult must be a non-negative number';
-    }
+    const giaInfantError = validateNumber(giaInfant, 'GIA Infant');
+    if (giaInfantError) errors.giaInfant = giaInfantError;
+
+    const giaAdultError = validateNumber(giaAdult, 'GIA Adult');
+    if (giaAdultError) errors.giaAdult = giaAdultError;
     
     const calculatedGIATotal = Number(giaInfant || 0) + Number(giaAdult || 0);
     if (giaTotal !== calculatedGIATotal) {
@@ -105,17 +108,14 @@ class ValidationUtils {
   static validateDifference(totalAttended, iicsTotal, giaTotal) {
     const errors = {};
 
-    if (totalAttended === undefined || isNaN(totalAttended) || totalAttended < 0) {
-      errors.totalAttended = 'Total Attended must be a non-negative number';
-    }
-    
-    if (iicsTotal === undefined || isNaN(iicsTotal) || iicsTotal < 0) {
-      errors.iicsTotal = 'IICS Total must be a non-negative number';
-    }
-    
-    if (giaTotal === undefined || isNaN(giaTotal) || giaTotal < 0) {
-      errors.giaTotal = 'GIA Total must be a non-negative number';
-    }
+    const totalAttendedError = validateNumber(totalAttended, 'Total Attended');
+    if (totalAttendedError) errors.totalAttended = totalAttendedError;
+
+    const iicsTotalError = validateNumber(iicsTotal, 'IICS Total');
+    if (iicsTotalError) errors.iicsTotal = iicsTotalError;
+
+    const giaTotalError = validateNumber(giaTotal, 'GIA Total');
+    if (giaTotalError) errors.giaTotal = giaTotalError;
 
     if (totalAttended < giaTotal || totalAttended < iicsTotal) {
       errors.difference = 'Total Attended cannot be less than GIA or IICS Total';

@@ -1,6 +1,8 @@
 class ConfirmationDialog {
     constructor() {
         this.dialog = null;
+        this.confirmTotalAttended = null;
+        this.onConfirm = null;
         this.init();
     }
 
@@ -35,6 +37,7 @@ class ConfirmationDialog {
             `;
             document.body.appendChild(dialog);
             this.dialog = dialog;
+            this.confirmTotalAttended = document.getElementById('confirmTotalAttended');
 
             // Add event listener for cancel button
             document.getElementById('cancelButton').addEventListener('click', () => {
@@ -54,13 +57,17 @@ class ConfirmationDialog {
     }
 
     show(totalAttended, onConfirm) {
-        document.getElementById('confirmTotalAttended').textContent = totalAttended;
-        this.dialog.classList.remove('hidden');
-        this.onConfirm = onConfirm;
+        if (this.dialog && this.confirmTotalAttended) {
+            this.confirmTotalAttended.textContent = totalAttended;
+            this.onConfirm = onConfirm;
+            this.dialog.classList.remove('hidden');
+        }
     }
 
     hide() {
-        this.dialog.classList.add('hidden');
+        if (this.dialog) {
+            this.dialog.classList.add('hidden');
+        }
     }
 }
 
