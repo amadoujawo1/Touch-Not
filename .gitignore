@@ -3,6 +3,7 @@
 .env/
 env9/
 .idea/
+ env/
 
 
 # Ignore cache folder and python compiled files
