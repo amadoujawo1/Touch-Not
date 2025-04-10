@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ingore environement files
 .env/
 .idea/
@@ -11,3 +12,18 @@ routes/__pycache__/*.pyc
  
 # Ingore config file
 config.py
+=======
+# Ingore environement files
+# .env/
+
+# Ignore cache folder and python compiled files
+*.pyc
+__pycache__/
+__pycache__/*.pyc
+
+
+# Ingore config file
+config.py
+
+.idea/
+>>>>>>> 4f47e6cc45bc2b016e6ec4e28f1119074910d570

@@ -3,43 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The block title should only be defined once -->
     <title>{% block title %}Daily Cash Collection Report{% endblock %}</title>
+    <!-- CSRF Token Meta Tag -->
+    <!-- {% if form and form.csrf_token %}
+        {{ form.csrf_token }}
+    {% endif %} -->
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#22c55e',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#0ea5e9'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% block styles %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col">
     {% if current_user.is_authenticated %}
-    <header class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-2xl font-bold text-gray-900 sm:text-xl md:text-2xl">
-                    Daily Cash Collection Report
-                </h1>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-gray-600 text-sm sm:text-base">Welcome, {{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:px-4 sm:py-2">
-                    Logout
-                </a>
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img src="{{ url_for('static', filename='images/sp.jpg', _external=True) }}" alt="SP Logo" class="h-24 w-auto hover:scale-105 transition-transform duration-200" />
+                    <h1 class="text-3xl font-extrabold text-primary sm:text-4xl md:text-5xl transition-colors duration-200 hover:text-primary/90">
+                        
+                        Daily Cash Collection Report
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user-circle text-gray-500 text-xl"></i>
+                        <span class="text-gray-700 font-medium sm:text-base">Welcome, {{ current_user.username }}</span>
+                    </div>
+                    <a href="{{ url_for('auth.logout') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-danger hover:bg-danger/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger/50 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </a>
+                </div>
             </div>
         </div>
     </header>
     {% endif %}
 
-    <main class="container mx-auto py-8 px-4">
+    <main class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 flex-grow transition-all duration-200 ease-in-out">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="mb-4">
+        <div class="space-y-2">
             {% for category, message in messages %}
-            <div class="alert alert-{{ category if category != 'danger' else 'danger' }}" role="alert">
-                {{ message }}
+            <div class="flex p-4 mb-4 rounded-lg {% if category == 'success' %}bg-success/10 text-success{% elif category == 'danger' %}bg-danger/10 text-danger{% elif category == 'warning' %}bg-warning/10 text-warning{% else %}bg-info/10 text-info{% endif %} transition-all duration-200 ease-in-out transform hover:scale-[1.01]">
+                <div class="flex-shrink-0">
+                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-circle{% elif category == 'warning' %}fa-triangle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="font-medium">{{ message }}</p>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -50,9 +90,12 @@
         {% endblock %}
     </main>
 
-    <footer class="bg-white mt-auto py-4 border-t">
-        <div class="container mx-auto px-4 text-center text-gray-500">
-            <p>&copy; 2025 Securiport Cash Collection Report</p>
+    <footer class="bg-white py-4 border-t border-gray-200 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600 font-medium transition-colors duration-200 hover:text-primary">
+              
+                &copy; 2025 Securiport. All rights reserved.
+            </p>
         </div>
     </footer>
 
@@ -60,7 +103,153 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Confirmation Dialog -->
+    <script src="{{ url_for('static', filename='js/confirmation-dialog.js') }}"></script>
+    <!-- Session Timeout Modal -->
+    <div id="sessionTimeoutModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4 text-red-600">
+                Session Expiring
+            </h3>
+            <p class="text-gray-600 mb-2">Your session will expire in <span id="countdownTimer" class="font-bold text-red-600">30</span> seconds due to inactivity.</p>
+            <p class="text-gray-600 mb-6">Would you like to stay logged in?</p>
+            <div class="flex justify-end space-x-4">
+                <button onclick="confirmTimeout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                </button>
+                <button onclick="cancelTimeout()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-redo mr-1"></i>Stay Logged In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Initialize inactivity timeout only if user is authenticated
+        // {% if current_user.is_authenticated %}
+        let inactivityTimeout;
+        let countdownInterval;
+        let warningShown = false;
+        const TIMEOUT_DURATION = 20000; // 20 seconds timeout
+
+        function updateCountdown(secondsLeft) {
+            const countdownElement = document.getElementById('countdownTimer');
+            if (countdownElement) {
+                countdownElement.textContent = secondsLeft;
+            }
+        }
+
+        function showTimeoutWarning() {
+            document.getElementById('sessionTimeoutModal').classList.remove('hidden');
+            document.getElementById('sessionTimeoutModal').classList.add('flex');
+            warningShown = true;
+        
+            // Start countdown timer
+            let secondsLeft = 30; // Set to 30 seconds for better user experience
+            updateCountdown(secondsLeft);
+        
+            countdownInterval = setInterval(() => {
+                secondsLeft--;
+                updateCountdown(secondsLeft);
+                if (secondsLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    confirmTimeout();
+                }
+            }, 1000);
+        
+            // Play a notification sound
+            const audio = new Audio('/static/sounds/notification.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+            // Vibrate device if supported
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200]);
+            }
+        }
+
+        function hideTimeoutWarning() {
+            document.getElementById('sessionTimeoutModal').classList.add('hidden');
+            document.getElementById('sessionTimeoutModal').classList.remove('flex');
+            warningShown = false;
+            clearInterval(countdownInterval);
+        }
+
+        function cancelTimeout() {
+            hideTimeoutWarning();
+            // Reset the inactivity timer
+            resetInactivityTimeout();
+        }
+
+        function confirmTimeout() {
+            clearTimeout(inactivityTimeout);
+            clearInterval(countdownInterval);
+            
+            // Show loading state
+            const logoutBtn = event.target ? event.target.closest('button') : null;
+            if (logoutBtn) {
+                logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Logging out...';
+                logoutBtn.disabled = true;
+            }
+            
+            // Clear all session storage and local storage
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            // Play a notification sound for logout if available
+            const audio = new Audio('/static/sounds/logout.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+            
+            // Vibrate device if supported
+            if ('vibrate' in navigator) {
+                navigator.vibrate([400]);
+            }
+            
+            // Immediately redirect to login page
+            window.location.href = "{{ url_for('auth.login') }}";
+            
+            // Make an async call to logout endpoint
+            fetch("{{ url_for('auth.logout', timeout='true') }}", {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).catch(error => console.log('Logout request failed:', error));
+        }
+
+        function resetInactivityTimeout() {
+            if (!warningShown) {
+                clearTimeout(inactivityTimeout);
+                // Set the inactivity timer to 2 minutes (120000ms)
+                inactivityTimeout = setTimeout(() => {
+                    showTimeoutWarning();
+                }, 120000);
+            }
+        }
+
+        // Reset timeout on user activity
+        document.addEventListener('mousemove', resetInactivityTimeout);
+        document.addEventListener('keypress', resetInactivityTimeout);
+        document.addEventListener('click', resetInactivityTimeout);
+        document.addEventListener('scroll', resetInactivityTimeout);
+
+        // Clear timeouts when user manually logs out
+        document.querySelector('a[href="{{ url_for("auth.logout") }}"]')?.addEventListener('click', function() {
+            clearTimeout(inactivityTimeout);
+            // Reset the inactivity timer
+            clearInterval(countdownInterval);
+            hideTimeoutWarning();
+        });
+
+        // Initial setup
+        resetInactivityTimeout();
+        // {% endif %}
+    </script>
     
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/team-lead-charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    {% endblock %}
 </body>
 </html>

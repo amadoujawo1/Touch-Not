@@ -1,502 +1,443 @@
-// Main application script for client-side functionality
+// Storage Utilities
+class Storage {
+  static REPORTS_KEY = 'reports';
+  static ACTIVATED_TEAM_LEAD_KEY = 'activatedTeamLead';
+  static FLIGHTS_KEY = 'flights';
+  static SUPERVISORS_KEY = 'supervisors';
+
+  static getReports() {
+    try {
+      const reports = JSON.parse(localStorage.getItem(this.REPORTS_KEY) || '[]');
+      return reports;
+    } catch (error) {
+      console.error('Error getting reports:', error);
+      return [];
+    }
+  }
+
+  static getReportById(id) {
+    const reports = this.getReports();
+    return reports.find(report => report.id === id) || null;
+  }
+
+  static getReportsByUser(username) {
+    const reports = this.getReports();
+    return reports.filter(report => report.submittedBy === username);
+  }
+
+  static saveReport(report) {
+    try {
+      const reports = this.getReports();
+      report.id = report.id || Date.now().toString();
+      reports.push(report);
+      localStorage.setItem(this.REPORTS_KEY, JSON.stringify(reports));
+      return true;
+    } catch (error) {
+      console.error('Error saving report:', error);
+      return false;
+    }
+  }
+
+  static updateReport(id, updatedData) {
+    try {
+      const reports = this.getReports();
+      const index = reports.findIndex(report => report.id === id);
+      if (index !== -1) {
+        reports[index] = { ...reports[index], ...updatedData };
+        localStorage.setItem(this.REPORTS_KEY, JSON.stringify(reports));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating report:', error);
+      return false;
+    }
+  }
+
+  static isUpdateActivated(username, date) {
+    try {
+      const activation = JSON.parse(localStorage.getItem(this.ACTIVATED_TEAM_LEAD_KEY) || '{}');
+      return activation.username === username && activation.date === date;
+    } catch (error) {
+      console.error('Error checking update activation:', error);
+      return false;
+    }
+  }
+
+  static setUpdateActivation(username, date) {
+    try {
+      localStorage.setItem(this.ACTIVATED_TEAM_LEAD_KEY, JSON.stringify({ username, date }));
+      return true;
+    } catch (error) {
+      console.error('Error setting update activation:', error);
+      return false;
+    }
+  }
+
+  static clearUpdateActivation() {
+    localStorage.removeItem(this.ACTIVATED_TEAM_LEAD_KEY);
+  }
+
+  static getFlights() {
+    try {
+      return JSON.parse(localStorage.getItem(this.FLIGHTS_KEY) || '[]');
+    } catch (error) {
+      console.error('Error getting flights:', error);
+      return [];
+    }
+  }
+
+  static getSupervisors() {
+    try {
+      return JSON.parse(localStorage.getItem(this.SUPERVISORS_KEY) || '[]');
+    } catch (error) {
+      console.error('Error getting supervisors:', error);
+      return [];
+    }
+  }
+
+  static setFlights(flights) {
+    try {
+      localStorage.setItem(this.FLIGHTS_KEY, JSON.stringify(flights));
+      return true;
+    } catch (error) {
+      console.error('Error setting flights:', error);
+      return false;
+    }
+  }
+
+  static setSupervisors(supervisors) {
+    try {
+      localStorage.setItem(this.SUPERVISORS_KEY, JSON.stringify(supervisors));
+      return true;
+    } catch (error) {
+      console.error('Error setting supervisors:', error);
+      return false;
+    }
+  }
+}
+
+// Validation Utilities
+class ValidationUtils {
+  static validateReport(data) {
+    const errors = {};
+
+    const requiredFields = [
+      { field: 'date', message: 'Date is required' },
+      { field: 'ref_no', message: 'Reference number is required' },
+      { field: 'supervisor', message: 'Supervisor name is required' },
+      { field: 'flight', message: 'Flight is required' },
+      { field: 'zone', message: 'Zone is required' },
+    ];
+
+    requiredFields.forEach(({ field, message }) => {
+      if (!data[field] || String(data[field]).trim() === '') {
+        errors[field] = message;
+      }
+    });
+
+    const numericFields = [
+      { field: 'paid', message: 'Paid must be a non-negative number' },
+      { field: 'diplomats', message: 'Diplomats must be a non-negative number' },
+      { field: 'infants', message: 'Infants must be a non-negative number' },
+      { field: 'not_paid', message: 'Not Paid must be a non-negative number' },
+      { field: 'paid_card_qr', message: 'Paid Card/QR must be a non-negative number' },
+      { field: 'refunds', message: 'Refunds must be a non-negative number' },
+      { field: 'deportees', message: 'Deportees must be a non-negative number' },
+      { field: 'transit', message: 'Transit must be a non-negative number' },
+      { field: 'waivers', message: 'Waivers must be a non-negative number' },
+      { field: 'prepaid_bank', message: 'Prepaid Bank must be a non-negative number' },
+      { field: 'round_trip', message: 'Round Trip must be a non-negative number' },
+      { field: 'late_payment', message: 'Late Payment must be a non-negative number' },
+    ];
+
+    numericFields.forEach(({ field, message }) => {
+      const value = Number(data[field]);
+      if (value === undefined || value === null || isNaN(value) || value < 0) {
+        errors[field] = message;
+      }
+    });
+
+    return errors;
+  }
+
+  static validateIICSGIA(iicsInfant, iicsAdult, iicsTotal, giaInfant, giaAdult, giaTotal) {
+    const errors = {};
+
+    const validateNumber = (value, field) => {
+      if (value === undefined || value === null || isNaN(value) || value < 0) {
+        return `${field} must be a non-negative number`;
+      }
+      return null;
+    };
+
+    const iicsInfantError = validateNumber(iicsInfant, 'IICS Infant');
+    if (iicsInfantError) errors.iicsInfant = iicsInfantError;
+
+    const iicsAdultError = validateNumber(iicsAdult, 'IICS Adult');
+    if (iicsAdultError) errors.iicsAdult = iicsAdultError;
+    
+    const calculatedIICSTotal = Number(iicsInfant || 0) + Number(iicsAdult || 0);
+    if (iicsTotal !== calculatedIICSTotal) {
+      errors.iicsTotal = 'IICS Total must be the sum of IICS Infant and IICS Adult';
+    }
+
+    const giaInfantError = validateNumber(giaInfant, 'GIA Infant');
+    if (giaInfantError) errors.giaInfant = giaInfantError;
+
+    const giaAdultError = validateNumber(giaAdult, 'GIA Adult');
+    if (giaAdultError) errors.giaAdult = giaAdultError;
+    
+    const calculatedGIATotal = Number(giaInfant || 0) + Number(giaAdult || 0);
+    if (giaTotal !== calculatedGIATotal) {
+      errors.giaTotal = 'GIA Total must be the sum of GIA Infant and GIA Adult';
+    }
+
+    return errors;
+  }
+
+  static validateDifference(totalAttended, iicsTotal, giaTotal) {
+    const errors = {};
+
+    const validateNumber = (value, field) => {
+      if (value === undefined || value === null || isNaN(value) || value < 0) {
+        return `${field} must be a non-negative number`;
+      }
+      return null;
+    };
+
+    const totalAttendedError = validateNumber(totalAttended, 'Total Attended');
+    if (totalAttendedError) errors.totalAttended = totalAttendedError;
+
+    const iicsTotalError = validateNumber(iicsTotal, 'IICS Total');
+    if (iicsTotalError) errors.iicsTotal = iicsTotalError;
+
+    const giaTotalError = validateNumber(giaTotal, 'GIA Total');
+    if (giaTotalError) errors.giaTotal = giaTotalError;
+
+    if (totalAttended < giaTotal || totalAttended < iicsTotal) {
+      errors.difference = 'Total Attended cannot be less than GIA or IICS Total';
+    }
+
+    return errors;
+  }
+
+  static validatePassword(password) {
+    const result = {
+      valid: true,
+      message: 'Password meets all criteria'
+    };
+
+    if (!password || password.length < 8) {
+      result.valid = false;
+      result.message = 'Password must be at least 8 characters long';
+      return result;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      result.valid = false;
+      result.message = 'Password must contain at least one uppercase letter';
+      return result;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      result.valid = false;
+      result.message = 'Password must contain at least one lowercase letter';
+      return result;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      result.valid = false;
+      result.message = 'Password must contain at least one number';
+      return result;
+    }
+
+    if (!/[@$!%*?&]/.test(password)) {
+      result.valid = false;
+      result.message = 'Password must contain at least one special character (@$!%*?&)';
+      return result;
+    }
+
+    return result;
+  }
+
+  static passwordsMatch(password, confirmPassword) {
+    return password === confirmPassword;
+  }
+}
+
+// Confirmation Dialog
+class ConfirmationDialog {
+  constructor() {
+    this.dialog = null;
+    this.confirmTotalAttended = null;
+    this.onConfirm = null;
+    this.init();
+  }
+
+  init() {
+    if (!document.getElementById('confirmationDialog')) {
+      const dialog = document.createElement('div');
+      dialog.id = 'confirmationDialog';
+      dialog.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden';
+      dialog.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Confirm Submission</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">
+                Total number of passengers attended: <span id="confirmTotalAttended" class="font-bold text-gray-700"></span>
+              </p>
+              <p class="mt-1 text-sm text-gray-500">Are you sure you want to submit this report?</p>
+            </div>
+            <div class="items-center px-4 py-3">
+              <button id="confirmButton"
+                class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mr-2">
+                Confirm
+              </button>
+              <button id="cancelButton"
+                class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+      this.dialog = dialog;
+      this.confirmTotalAttended = document.getElementById('confirmTotalAttended');
+
+      document.getElementById('cancelButton').addEventListener('click', () => {
+        this.hide();
+      });
+
+      document.getElementById('confirmButton').addEventListener('click', () => {
+        if (this.onConfirm) {
+          this.onConfirm();
+        }
+        this.hide();
+      });
+    } else {
+      this.dialog = document.getElementById('confirmationDialog');
+    }
+  }
+
+  show(totalAttended, onConfirm) {
+    if (this.dialog && this.confirmTotalAttended) {
+      this.confirmTotalAttended.textContent = totalAttended;
+      this.onConfirm = onConfirm;
+      this.dialog.classList.remove('hidden');
+    }
+  }
+
+  hide() {
+    if (this.dialog) {
+      this.dialog.classList.add('hidden');
+    }
+  }
+}
+
+// Create a single instance of ConfirmationDialog
+const confirmationDialog = new ConfirmationDialog();
+window.confirmationDialog = confirmationDialog;
+
+// Main App Class
+class App {
+  constructor() {
+    this.container = document.getElementById('app');
+    this.currentUser = null;
+    this.filteredReports = null;
+    this.selectedDate = null;
+    this.selectedTeamLead = null;
+    this.inactivityTimeout = null;
+
+    if (!Storage.findUser('admin')) {
+      Storage.saveUser({
+        username: 'admin',
+        password: Storage.hashPassword('admin123'),
+        role: 'admin',
+        gender: 'other',
+        email: 'admin@securiport.com',
+        telephone: '123-456-7890'
+      });
+      Storage.saveFlightsAndSupervisors(['Brussel', 'Asky', 'Turkish Airline'], ['John Doe', 'Jane Smith', 'Bob Johnson']);
+    }
+
+    this.loadActivationData();
+    this.init();
+  }
+
+  loadActivationData() {
+    const activation = JSON.parse(localStorage.getItem(Storage.ACTIVATED_TEAM_LEAD_KEY) || '{}');
+    if (this.currentUser && this.currentUser.role === 'teamLead' && activation.username === this.currentUser.username) {
+      this.selectedDate = activation.date || null;
+    }
+  }
+
+  init() {
+    this.header = new Header(document.createElement('div'));
+    this.welcomeMessage = new WelcomeMessage(document.createElement('div'));
+    this.loginForm = new LoginForm(document.createElement('div'));
+    this.registerForm = new RegisterForm(document.createElement('div'));
+    this.dataEntryForm = new DataEntryForm(document.createElement('div'));
+    this.dataTable = new DataTable(document.createElement('div'));
+    this.setupInactivityLogout();
+    this.showLoginScreen();
+  }
+
+  // ... rest of the App class implementation ...
+}
+
+// Initialize form validation on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize inactivity timeout for automatic logout
-    initInactivityTimeout();
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
     
-    // Initialize the appropriate dashboard based on user role
-    initializeDashboard();
-    
-    // Set up event listeners for common elements
-    setupEventListeners();
+    if (passwordInput && confirmPasswordInput) {
+      passwordInput.addEventListener('input', function() {
+        const validation = ValidationUtils.validatePassword(this.value);
+        const feedbackElement = document.getElementById('password-feedback') || 
+                              document.createElement('div');
+        
+        feedbackElement.id = 'password-feedback';
+        feedbackElement.className = validation.valid ? 
+                                   'text-xs text-green-500 mt-1' : 
+                                   'text-xs text-red-500 mt-1';
+        feedbackElement.textContent = validation.message;
+        
+        if (!this.parentNode.contains(feedbackElement)) {
+          this.parentNode.appendChild(feedbackElement);
+        }
+      });
+
+      confirmPasswordInput.addEventListener('input', function() {
+        const validation = ValidationUtils.passwordsMatch(
+          passwordInput.value,
+          this.value
+        );
+        
+        const feedbackElement = document.getElementById('confirm-password-feedback') || 
+                              document.createElement('div');
+        
+        feedbackElement.id = 'confirm-password-feedback';
+        feedbackElement.className = validation ? 
+                                   'text-xs text-green-500 mt-1' : 
+                                   'text-xs text-red-500 mt-1';
+        feedbackElement.textContent = validation ? 
+                                     'Passwords match' : 
+                                     'Passwords do not match';
+        
+        if (!this.parentNode.contains(feedbackElement)) {
+          this.parentNode.appendChild(feedbackElement);
+        }
+      });
+    }
+  }
 });
 
-// Constants
-const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-let inactivityTimer;
-
-// Initialize inactivity timeout for automatic logout
-function initInactivityTimeout() {
-    resetInactivityTimeout();
-    
-    // Monitor user activity to reset the timeout
-    ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
-        document.addEventListener(event, resetInactivityTimeout);
-    });
-}
-
-// Reset the inactivity timeout
-function resetInactivityTimeout() {
-    clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(() => {
-        // Redirect to logout page after inactivity
-        window.location.href = '/logout';
-    }, INACTIVITY_TIMEOUT);
-}
-
-// Initialize dashboard based on user role
-function initializeDashboard() {
-    // Check if data-role attribute exists on body element
-    const userRole = document.body.dataset.role;
-    
-    if (!userRole) return;
-    
-    switch (userRole) {
-        case 'admin':
-            initAdminDashboard();
-            break;
-        case 'teamLead':
-            initTeamLeadDashboard();
-            break;
-        case 'dataAnalyst':
-            initDataAnalystDashboard();
-            break;
-        case 'cashController':
-            initCashControllerDashboard();
-            break;
-    }
-}
-
-// Initialize Admin Dashboard
-function initAdminDashboard() {
-    // Setup user search functionality
-    const userSearchInput = document.getElementById('userSearch');
-    if (userSearchInput) {
-        userSearchInput.addEventListener('input', handleUserSearch);
-    }
-    
-    // Setup modal for reset password
-    initResetPasswordModal();
-}
-
-// Initialize Team Lead Dashboard
-function initTeamLeadDashboard() {
-    // Initialize the data entry form
-    initDataEntryForm();
-    
-    // Initialize report filters
-    initReportFilters();
-    
-    // Setup update report modal
-    initUpdateReportModal();
-}
-
-// Initialize Data Analyst Dashboard
-function initDataAnalystDashboard() {
-    // Initialize report filters
-    initReportFilters();
-    
-    // Initialize verification functionality
-    initVerificationForm();
-}
-
-// Initialize Cash Controller Dashboard
-function initCashControllerDashboard() {
-    // Initialize report filters
-    initReportFilters();
-    
-    // Setup download functionality
-    setupDownloadButton();
-}
-
-// Setup event listeners for common elements
-function setupEventListeners() {
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            window.location.href = '/logout';
-        });
-    }
-    
-    // Flash messages dismissal
-    document.querySelectorAll('.alert').forEach(alert => {
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '&times;';
-        closeBtn.className = 'close';
-        closeBtn.addEventListener('click', () => {
-            alert.style.display = 'none';
-        });
-        alert.appendChild(closeBtn);
-    });
-}
-
-// Initialize data entry form
-function initDataEntryForm() {
-    const dataEntryForm = document.getElementById('dataEntryForm');
-    if (!dataEntryForm) return;
-    
-    // Calculate total on input
-    const numberInputs = dataEntryForm.querySelectorAll('input[type="number"]');
-    numberInputs.forEach(input => {
-        input.addEventListener('input', calculateTotal);
-    });
-    
-    // Confirm form submission
-    dataEntryForm.addEventListener('submit', e => {
-        if (!confirm('Are you sure you want to submit this data? Once submitted, you cannot edit it.')) {
-            e.preventDefault();
-        }
-    });
-    
-    // Handle reset button
-    const resetButton = document.getElementById('resetButton');
-    if (resetButton) {
-        resetButton.addEventListener('click', e => {
-            if (!confirm('Are you sure you want to clear the form? All data will be cleared.')) {
-                e.preventDefault();
-            }
-        });
-    }
-    
-    // Calculate initial total
-    calculateTotal();
-}
-
-// Calculate total attended passengers
-function calculateTotal() {
-    const form = document.getElementById('dataEntryForm');
-    if (!form) return;
-    
-    const totalAttendedElement = document.getElementById('totalAttended');
-    if (!totalAttendedElement) return;
-    
-    const fields = [
-        'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
-        'deportees', 'transit', 'waivers', 'prepaid_bank',
-        'round_trip', 'late_payment'
-    ];
-    
-    const sum = fields.reduce((total, field) => {
-        const input = form.querySelector(`[name="${field}"]`);
-        return total + (parseInt(input?.value) || 0);
-    }, 0);
-    
-    const refundsInput = form.querySelector('[name="refunds"]');
-    const refunds = parseInt(refundsInput?.value) || 0;
-    
-    totalAttendedElement.textContent = sum - refunds;
-}
-
-// Initialize report filters
-function initReportFilters() {
-    const supervisorFilter = document.getElementById('supervisorFilter');
-    const flightFilter = document.getElementById('flightFilter');
-    const startDateFilter = document.getElementById('startDateFilter');
-    const endDateFilter = document.getElementById('endDateFilter');
-    
-    if (!supervisorFilter && !flightFilter && !startDateFilter && !endDateFilter) return;
-    
-    const filterTable = () => {
-        const reportRows = document.querySelectorAll('#reportTableBody tr');
-        
-        reportRows.forEach(row => {
-            const supervisor = row.querySelector('[data-supervisor]')?.dataset.supervisor || 
-                               row.cells[2]?.textContent || '';
-            const flight = row.querySelector('[data-flight]')?.dataset.flight || 
-                           row.cells[3]?.textContent || '';
-            const date = row.querySelector('[data-date]')?.dataset.date || 
-                         row.cells[0]?.textContent || '';
-            
-            const matchesSupervisor = !supervisorFilter?.value || 
-                                     supervisor.toLowerCase().includes(supervisorFilter.value.toLowerCase());
-            const matchesFlight = !flightFilter?.value || 
-                                 flight.toLowerCase().includes(flightFilter.value.toLowerCase());
-            
-            let matchesDate = true;
-            if (startDateFilter?.value && endDateFilter?.value) {
-                matchesDate = date >= startDateFilter.value && date <= endDateFilter.value;
-            } else if (startDateFilter?.value) {
-                matchesDate = date >= startDateFilter.value;
-            } else if (endDateFilter?.value) {
-                matchesDate = date <= endDateFilter.value;
-            }
-            
-            row.style.display = (matchesSupervisor && matchesFlight && matchesDate) ? '' : 'none';
-        });
-    };
-    
-    // Add event listeners to filters
-    if (supervisorFilter) supervisorFilter.addEventListener('input', filterTable);
-    if (flightFilter) flightFilter.addEventListener('input', filterTable);
-    if (startDateFilter) startDateFilter.addEventListener('input', filterTable);
-    if (endDateFilter) endDateFilter.addEventListener('input', filterTable);
-}
-
-// Initialize verification form
-function initVerificationForm() {
-    const verificationForm = document.getElementById('verificationForm');
-    if (!verificationForm) return;
-    
-    // Calculate IICS total and GIA total automatically
-    const iicsInfantInput = document.getElementById('iics_infant');
-    const iicsAdultInput = document.getElementById('iics_adult');
-    const iicsTotalInput = document.getElementById('iics_total');
-    
-    const giaInfantInput = document.getElementById('gia_infant');
-    const giaAdultInput = document.getElementById('gia_adult');
-    const giaTotalInput = document.getElementById('gia_total');
-    
-    const calculateTotals = () => {
-        const iicsInfant = parseInt(iicsInfantInput?.value) || 0;
-        const iicsAdult = parseInt(iicsAdultInput?.value) || 0;
-        if (iicsTotalInput) iicsTotalInput.value = iicsInfant + iicsAdult;
-        
-        const giaInfant = parseInt(giaInfantInput?.value) || 0;
-        const giaAdult = parseInt(giaAdultInput?.value) || 0;
-        if (giaTotalInput) giaTotalInput.value = giaInfant + giaAdult;
-    };
-    
-    // Add event listeners to inputs
-    if (iicsInfantInput) iicsInfantInput.addEventListener('input', calculateTotals);
-    if (iicsAdultInput) iicsAdultInput.addEventListener('input', calculateTotals);
-    if (giaInfantInput) giaInfantInput.addEventListener('input', calculateTotals);
-    if (giaAdultInput) giaAdultInput.addEventListener('input', calculateTotals);
-    
-    // Calculate initial totals
-    calculateTotals();
-}
-
-// Setup download button for reports
-function setupDownloadButton() {
-    const downloadBtn = document.getElementById('downloadBtn');
-    if (!downloadBtn) return;
-    
-    downloadBtn.addEventListener('click', () => {
-        const supervisorFilter = document.getElementById('supervisorFilter')?.value || '';
-        const flightFilter = document.getElementById('flightFilter')?.value || '';
-        const startDateFilter = document.getElementById('startDateFilter')?.value || '';
-        const endDateFilter = document.getElementById('endDateFilter')?.value || '';
-        
-        const params = new URLSearchParams();
-        if (supervisorFilter) params.append('supervisor', supervisorFilter);
-        if (flightFilter) params.append('flight', flightFilter);
-        if (startDateFilter) params.append('start_date', startDateFilter);
-        if (endDateFilter) params.append('end_date', endDateFilter);
-        
-        window.location.href = `/cash-controller/download-csv?${params.toString()}`;
-    });
-}
-
-// Initialize update report modal
-function initUpdateReportModal() {
-    const updateButtons = document.querySelectorAll('.update-report-btn');
-    
-    updateButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const reportId = btn.getAttribute('data-report-id');
-            const modalBody = document.getElementById('updateReportModalBody');
-            
-            try {
-                const response = await fetch(`/team-lead/api/reports?id=${reportId}`);
-                if (!response.ok) throw new Error('Failed to fetch report data');
-                
-                const reports = await response.json();
-                
-                if (reports.length > 0) {
-                    const report = reports[0];
-                    
-                    // Create update form in modal
-                    modalBody.innerHTML = createUpdateFormHTML(report, reportId);
-                    
-                    // Show modal
-                    const updateModal = new bootstrap.Modal(document.getElementById('updateReportModal'));
-                    updateModal.show();
-                    
-                    // Add event listeners for calculation
-                    document.querySelectorAll('#updateReportForm input[type="number"]').forEach(input => {
-                        input.addEventListener('input', calculateUpdateTotal);
-                    });
-                    
-                    // Calculate initial total
-                    calculateUpdateTotal();
-                }
-            } catch (error) {
-                console.error('Error fetching report data:', error);
-                alert('Failed to load report data. Please try again.');
-            }
-        });
-    });
-}
-
-// Create HTML for update form
-function createUpdateFormHTML(report, reportId) {
-    return `
-        <form id="updateReportForm" method="POST" action="/team-lead/reports/${reportId}/update">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="form-group">
-                    <label for="u_paid">Paid</label>
-                    <input type="number" id="u_paid" name="paid" class="form-control" value="${report.paid || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_diplomats">Diplomats</label>
-                    <input type="number" id="u_diplomats" name="diplomats" class="form-control" value="${report.diplomats || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_infants">Infants</label>
-                    <input type="number" id="u_infants" name="infants" class="form-control" value="${report.infants || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_not_paid">Not Paid</label>
-                    <input type="number" id="u_not_paid" name="not_paid" class="form-control" value="${report.notPaid || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_paid_card_qr">Paid Card/QR</label>
-                    <input type="number" id="u_paid_card_qr" name="paid_card_qr" class="form-control" value="${report.paidCardQr || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_refunds">Refunds</label>
-                    <input type="number" id="u_refunds" name="refunds" class="form-control" value="${report.refunds || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_deportees">Deportees</label>
-                    <input type="number" id="u_deportees" name="deportees" class="form-control" value="${report.deportees || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_transit">Transit</label>
-                    <input type="number" id="u_transit" name="transit" class="form-control" value="${report.transit || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_waivers">Waivers</label>
-                    <input type="number" id="u_waivers" name="waivers" class="form-control" value="${report.waivers || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_prepaid_bank">Prepaid Bank</label>
-                    <input type="number" id="u_prepaid_bank" name="prepaid_bank" class="form-control" value="${report.prepaidBank || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_round_trip">Round Trip</label>
-                    <input type="number" id="u_round_trip" name="round_trip" class="form-control" value="${report.roundTrip || 0}" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="u_late_payment">Late Payment</label>
-                    <input type="number" id="u_late_payment" name="late_payment" class="form-control" value="${report.latePayment || 0}" min="0">
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <label for="total_attended">Total Attended:</label>
-                <span id="update_total_attended" class="font-bold ml-2">0</span>
-            </div>
-            
-            <div class="form-group mt-4">
-                <label for="u_remarks">Remarks</label>
-                <textarea id="u_remarks" name="remarks" class="form-control" rows="3">${report.remarks || ''}</textarea>
-            </div>
-            
-            <div class="d-flex justify-content-end mt-4">
-                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update Report</button>
-            </div>
-        </form>
-    `;
-}
-
-// Calculate total for update form
-function calculateUpdateTotal() {
-    const form = document.getElementById('updateReportForm');
-    if (!form) return;
-    
-    const totalElement = document.getElementById('update_total_attended');
-    if (!totalElement) return;
-    
-    const fields = [
-        'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
-        'deportees', 'transit', 'waivers', 'prepaid_bank',
-        'round_trip', 'late_payment'
-    ];
-    
-    const sum = fields.reduce((total, field) => {
-        const input = form.querySelector(`[name="${field}"]`);
-        return total + (parseInt(input?.value) || 0);
-    }, 0);
-    
-    const refundsInput = form.querySelector('[name="refunds"]');
-    const refunds = parseInt(refundsInput?.value) || 0;
-    
-    totalElement.textContent = sum - refunds;
-}
-
-// Initialize reset password modal
-function initResetPasswordModal() {
-    const resetBtns = document.querySelectorAll('.reset-password-btn');
-    const resetModal = document.getElementById('resetPasswordModal');
-    
-    if (!resetBtns.length || !resetModal) return;
-    
-    resetBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const userId = btn.getAttribute('data-userid');
-            const resetForm = document.getElementById('resetPasswordForm');
-            
-            if (resetForm) {
-                resetForm.action = `/admin/users/${userId}/reset-password`;
-                resetModal.classList.remove('hidden');
-                resetModal.classList.add('flex');
-            }
-        });
-    });
-    
-    const closeBtn = document.getElementById('closeResetModal');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            resetModal.classList.add('hidden');
-            resetModal.classList.remove('flex');
-            document.getElementById('resetPasswordForm')?.reset();
-        });
-    }
-    
-    // Setup password validation
-    const newPasswordInput = document.getElementById('new_password');
-    const confirmPasswordInput = document.getElementById('confirm_new_password');
-    const passwordMatchMessage = document.getElementById('password-match-message');
-    const submitBtn = document.getElementById('submitResetPassword');
-    
-    if (newPasswordInput && confirmPasswordInput && passwordMatchMessage && submitBtn) {
-        const validatePassword = () => {
-            const password = newPasswordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            
-            if (confirmPassword) {
-                passwordMatchMessage.classList.remove('hidden');
-                
-                if (password === confirmPassword) {
-                    passwordMatchMessage.textContent = 'Passwords match';
-                    passwordMatchMessage.className = 'text-xs text-green-500 mt-1';
-                    submitBtn.disabled = false;
-                } else {
-                    passwordMatchMessage.textContent = 'Passwords do not match';
-                    passwordMatchMessage.className = 'text-xs text-red-500 mt-1';
-                    submitBtn.disabled = true;
-                }
-            }
-            
-            // Check password complexity
-            const hasUppercase = /[A-Z]/.test(password);
-            const hasLowercase = /[a-z]/.test(password);
-            const hasNumber = /\d/.test(password);
-            const hasSpecial = /[@$!%*?&]/.test(password);
-            const isLongEnough = password.length >= 8;
-            
-            if (!(hasUppercase && hasLowercase && hasNumber && hasSpecial && isLongEnough)) {
-                submitBtn.disabled = true;
-            }
-        };
-        
-        newPasswordInput.addEventListener('input', validatePassword);
-        confirmPasswordInput.addEventListener('input', validatePassword);
-    }
-}
-
-// Handle user search in admin dashboard
-function handleUserSearch() {
-    const searchInput = document.getElementById('userSearch');
-    if (!searchInput) return;
-    
-    const searchTerm = searchInput.value.toLowerCase();
-    const userRows = document.querySelectorAll('#userTableBody tr');
-    
-    userRows.forEach(row => {
-        const username = row.cells[0].textContent.toLowerCase();
-        row.style.display = username.includes(searchTerm) ? '' : 'none';
-    });
-}
+// Export necessary classes and utilities
+window.Storage = Storage;
+window.ValidationUtils = ValidationUtils;
+window.App = App;
