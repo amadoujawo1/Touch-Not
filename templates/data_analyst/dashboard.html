@@ -79,7 +79,27 @@
                         <th class="py-2 px-4 border-b text-left">Supervisor</th>
                         <th class="py-2 px-4 border-b text-left">Flight</th>
                         <th class="py-2 px-4 border-b text-left">Zone</th>
+                        <th class="py-2 px-4 border-b text-left">Paid</th>
+                        <th class="py-2 px-4 border-b text-left">Diplomats</th>
+                        <th class="py-2 px-4 border-b text-left">Infants</th>
+                        <th class="py-2 px-4 border-b text-left">Not Paid</th>
+                        <th class="py-2 px-4 border-b text-left">Paid Card/QR</th>
+                        <th class="py-2 px-4 border-b text-left">Refunds</th>
+                        <th class="py-2 px-4 border-b text-left">Deportees</th>
+                        <th class="py-2 px-4 border-b text-left">Transit</th>
+                        <th class="py-2 px-4 border-b text-left">Waivers</th>
+                        <th class="py-2 px-4 border-b text-left">Prepaid Bank</th>
+                        <th class="py-2 px-4 border-b text-left">Round Trip</th>
+                        <th class="py-2 px-4 border-b text-left">Late Payment</th>
                         <th class="py-2 px-4 border-b text-left">Total Attended</th>
+                        <!-- <th class="py-2 px-4 border-b text-left">IICS Infant</th>
+                        <th class="py-2 px-4 border-b text-left">IICS Adult</th>
+                        <th class="py-2 px-4 border-b text-left">IICS Total</th>
+                        <th class="py-2 px-4 border-b text-left">GIA Infant</th>
+                        <th class="py-2 px-4 border-b text-left">GIA Adult</th>
+                        <th class="py-2 px-4 border-b text-left">GIA Total</th>
+                        <th class="py-2 px-4 border-b text-left">IICS-Total Difference</th>
+                        <th class="py-2 px-4 border-b text-left">GIA-Total Difference</th> -->
                         <th class="py-2 px-4 border-b text-left">Status</th>
                         <th class="py-2 px-4 border-b text-left">Actions</th>
                     </tr>
@@ -92,8 +112,27 @@
                         <td class="py-2 px-4 border-b">{{ report.supervisor }}</td>
                         <td class="py-2 px-4 border-b">{{ report.flight_name }}</td>
                         <td class="py-2 px-4 border-b">{{ report.zone }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.paid }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.diplomats }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.infants }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.not_paid }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.paid_card_qr }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.refunds }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.deportees }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.transit }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.waivers }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.prepaid_bank }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.round_trip }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.late_payment }}</td>
                         <td class="py-2 px-4 border-b">{{ report.total_attended }}</td>
-                    
+                        <!-- <td class="py-2 px-4 border-b">{{ report.iics_infant if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.iics_adult if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.iics_total if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.gia_infant if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.gia_adult if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.gia_total if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.iics_total_difference if report.verified else '-' }}</td>
+                        <td class="py-2 px-4 border-b">{{ report.gia_total_difference if report.verified else '-' }}</td> -->
                         <!-- <td class="py-2 px-4 border-b"> {{report.status}} {{ report.verified_date.strftime('%Y-%m-%d %H:%M') if report.verified_date else '' }}</td> -->
                         <td class="py-2 px-4 border-b">
                             {% if report.verified %}

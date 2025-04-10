@@ -23,8 +23,8 @@ def create_mysql_database(app):
                 connection = pymysql.connect(
                     host=app.config.get('MYSQL_HOST', 'localhost'),
                     # port=3309,
-                    user=app.config.get('MYSQL_USER', 'root'),
-                    password=app.config.get('MYSQL_PASSWORD', 'MineOne'),
+                    user=app.config.get('MYSQL_USER', 'jawo'),
+                    password=app.config.get('MYSQL_PASSWORD', 'abc_123'),
                     charset='utf8mb4',
                     cursorclass=pymysql.cursors.DictCursor
                 )

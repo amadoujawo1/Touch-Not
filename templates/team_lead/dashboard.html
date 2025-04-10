@@ -219,6 +219,18 @@
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supervisor</th>
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Flight</th>
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diplomats</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Infants</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Not Paid</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Card/QR</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refunds</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deportees</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transit</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waivers</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prepaid Bank</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Round Trip</th>
+                            <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Late Payment</th>
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Attended</th>
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -232,6 +244,18 @@
                             <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.supervisor }}</td>
                             <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.flight_name }}</td>
                             <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.zone }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.paid }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.diplomats }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.infants }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.not_paid }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.paid_card_qr }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.refunds }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.deportees }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.transit }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.waivers }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.prepaid_bank }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.round_trip }}</td>
+                            <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-900">{{ report.late_payment }}</td>
                             <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-900">{{ report.total_attended }}</td>
                             <td class="py-4 px-6 whitespace-nowrap text-sm">
                                 {% if report.verified %}
