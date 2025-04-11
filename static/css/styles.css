@@ -222,17 +222,94 @@ h3 { font-size: 1.75rem; }
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+/* Mobile devices */
+@media (max-width: 640px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
+
+  .login-card {
+    margin: 0.75rem;
+    padding: 1.25rem;
+    max-width: 90%;
+  }
+
   .table-container {
-    border-radius: 0.75rem;
+    margin: 0.5rem;
+    border-radius: 0.5rem;
   }
-  
+
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
   .table th, .table td {
-    padding: 0.75rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
   }
-  
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .card {
+    margin: 0.5rem;
+  }
+
+  .card-header {
+    padding: 1rem;
+  }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Tablet devices */
+@media (min-width: 641px) and (max-width: 1024px) {
   .login-card {
     margin: 1rem;
     padding: 1.5rem;
+    max-width: 80%;
+  }
+
+  .table-container {
+    margin: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .table th, .table td {
+    padding: 0.75rem;
+  }
+
+  .card {
+    margin: 0.75rem;
+  }
+
+  .btn {
+    min-width: 120px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1025px) {
+  .login-card {
+    max-width: 32rem;
+  }
+
+  .table-container {
+    margin: 1.5rem 0;
+  }
+
+  .card {
+    margin: 1rem;
+  }
+
+  .btn {
+    min-width: 150px;
   }
 }

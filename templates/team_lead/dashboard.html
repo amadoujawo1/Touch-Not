@@ -275,6 +275,10 @@
                                        class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
                                         <i class="fas fa-edit mr-1"></i> Edit
                                     </a>
+                                    {% elif not report.verified %}
+                                    <span class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-500 text-sm font-medium rounded-md cursor-not-allowed">
+                                        <i class="fas fa-edit mr-1"></i> Edit (Locked)
+                                    </span>
                                     {% endif %}
                                     <a href="{{ url_for('team_lead.view_report', report_id=report.id) }}" class="inline-flex items-center px-2.5 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors rounded-md hover:bg-blue-50" title="View Details">
                                         <i class="fas fa-eye mr-1"></i> View
