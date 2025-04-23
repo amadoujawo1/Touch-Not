@@ -4,6 +4,9 @@ import pymysql
 from flask import Flask,render_template
 from extensions import db, login_manager
 from config import Config
+from flask_wtf.csrf import CSRFProtect
+
+csrf = CSRFProtect()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -106,6 +109,7 @@ def create_app():
     """Initialize Flask app."""
     app = Flask(__name__)
     app.config.from_object(Config)
+    csrf.init_app(app)
 
     db.init_app(app)
     login_manager.init_app(app)

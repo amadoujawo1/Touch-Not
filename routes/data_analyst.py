@@ -27,8 +27,9 @@ def dashboard():
     activation_form = TeamLeadActivationForm()
     activation_form.team_lead.choices = [('', 'Select Team Lead')] + [(str(tl.id), tl.username) for tl in team_leads]
     
-    # Get reports for verification
-    reports = Report.query.order_by(Report.date.desc()).all()
+    # Get reports for verification, prioritizing recent and pending reports
+    reports = Report.query.filter_by(verified=False).order_by(Report.date.desc()).all() + \
+              Report.query.filter_by(verified=True).order_by(Report.date.desc()).limit(10).all()
     
     # Get recent activations
     recent_activations = TeamLeadActivation.query.order_by(TeamLeadActivation.created_at.desc()).limit(5).all()
@@ -36,7 +37,8 @@ def dashboard():
     return render_template('data_analyst/dashboard.html', 
                           reports=reports, 
                           activation_form=activation_form,
-                          recent_activations=recent_activations)
+                          recent_activations=recent_activations,
+                          now=datetime.now())
 
 @data_analyst_bp.route('/reports/<int:report_id>/verify', methods=['GET', 'POST'])
 @data_analyst_required

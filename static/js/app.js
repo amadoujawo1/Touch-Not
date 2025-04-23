@@ -1,3 +1,8 @@
+// Get CSRF token from meta tag
+function getCSRFToken() {
+  return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
 // Database API Utilities
 class Storage {
   static async getReports() {
@@ -39,6 +44,7 @@ class Storage {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify(report)
       });
@@ -55,6 +61,7 @@ class Storage {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify(updatedData)
       });
@@ -82,6 +89,7 @@ class Storage {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify({ username, date })
       });
@@ -132,6 +140,7 @@ class Storage {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify(flights)
       });
@@ -148,6 +157,7 @@ class Storage {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify(supervisors)
       });

@@ -237,7 +237,7 @@ class DataTable {
           </td>
         ` : (onUpdate && this.currentUser && this.currentUser.role === 'teamLead' && storage.isUpdateActivated(this.currentUser.username)) ? `
           <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
-            <button class="update-btn px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm">Update</button>
+            <button class="update-btn px-3 py-1 text-white rounded-md sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm ${storage.isUpdateActivated(this.currentUser?.username) ? 'bg-green-600 hover:bg-green-700 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}" ${!storage.isUpdateActivated(this.currentUser?.username) ? 'disabled' : ''}>Update</button>
           </td>
         ` : ''}
       </tr>
