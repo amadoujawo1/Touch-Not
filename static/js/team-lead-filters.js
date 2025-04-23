@@ -1,86 +1,165 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Get filter elements
     const supervisorFilter = document.getElementById('supervisorFilter');
     const flightFilter = document.getElementById('flightFilter');
     const startDateFilter = document.getElementById('startDateFilter');
     const endDateFilter = document.getElementById('endDateFilter');
     const reportTableBody = document.getElementById('reportTableBody');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    const toggleButton = document.getElementById('toggleFilters');
+    const filterContent = document.getElementById('filterContent');
+    let isExpanded = true;
 
-    function filterTable() {
-        const rows = reportTableBody.getElementsByTagName('tr');
-        const supervisorValue = supervisorFilter.value.toLowerCase();
-        const flightValue = flightFilter.value.toLowerCase();
-        const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
-        const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
-
-        for (let row of rows) {
-            let show = true;
-            const cells = row.getElementsByTagName('td');
-            
-            if (cells.length === 0) continue;
-
-            const rowDate = new Date(cells[0].textContent);
-            const supervisorText = cells[2].textContent.toLowerCase();
-            const flightText = cells[3].textContent.toLowerCase();
-
-            // Filter by supervisor
-            if (supervisorValue && !supervisorText.includes(supervisorValue)) {
-                show = false;
-            }
-
-            // Filter by flight
-            if (flightValue && !flightText.includes(flightValue)) {
-                show = false;
-            }
-
-            // Filter by date range
-            if (startDate && rowDate < startDate) {
-                show = false;
-            }
-            if (endDate && rowDate > endDate) {
-                show = false;
-            }
-
-            row.style.display = show ? '' : 'none';
-        }
+    // Initialize height for smooth animation
+    if (filterContent) {
+        filterContent.style.maxHeight = filterContent.scrollHeight + 'px';
+        filterContent.style.overflow = 'hidden';
+        filterContent.style.transition = 'max-height 0.3s ease-in-out';
     }
 
-    // Add event listeners for real-time filtering
-    supervisorFilter.addEventListener('input', filterTable);
-    flightFilter.addEventListener('input', filterTable);
-    startDateFilter.addEventListener('change', filterTable);
-    endDateFilter.addEventListener('change', filterTable);
-
-    // Initialize export functionality
-    const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', function() {
-            const visibleRows = Array.from(reportTableBody.getElementsByTagName('tr'))
-                .filter(row => {
-                    // Only include visible rows that are verified
-                    const cells = row.getElementsByTagName('td');
-                    return row.style.display !== 'none' && 
-                           cells.length > 0 && 
-                           cells[6].textContent.trim().toLowerCase() === 'verified';
-                })
-                .map(row => {
-                    const cells = row.getElementsByTagName('td');
-                    return {
-                        date: cells[0].textContent,
-                        refNo: cells[1].textContent,
-                        supervisor: cells[2].textContent,
-                        flightName: cells[3].textContent,
-                        zone: cells[4].textContent,
-                        totalAttended: parseInt(cells[5].textContent),
-                        status: cells[6].textContent.trim()
-                    };
-                });
-
-            if (visibleRows.length === 0) {
-                alert('No verified reports found to export.');
-                return;
-            }
+    // Toggle filters visibility
+    if (toggleButton) {
+        toggleButton.addEventListener('click', function() {
+            isExpanded = !isExpanded;
             
-            ExportUtils.exportToCSV(visibleRows);
+            // Rotate arrow icon
+            const arrow = this.querySelector('svg');
+            if (arrow) {
+                arrow.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+                arrow.style.transition = 'transform 0.3s ease';
+            }
+
+            // Toggle content visibility
+            filterContent.style.maxHeight = isExpanded ? filterContent.scrollHeight + 'px' : '0';
         });
+    }
+
+    // Configure date inputs for MM/DD/YYYY format
+    startDateFilter.setAttribute('pattern', '\d{2}/\d{2}/\d{4}');
+    endDateFilter.setAttribute('pattern', '\d{2}/\d{2}/\d{4}');
+    startDateFilter.setAttribute('placeholder', 'MM/DD/YYYY');
+    endDateFilter.setAttribute('placeholder', 'MM/DD/YYYY');
+    startDateFilter.value = '';
+    endDateFilter.value = '';
+
+    // Store original table data
+    const originalRows = Array.from(reportTableBody.getElementsByTagName('tr'));
+    
+    // Initialize statistics with all data
+    updateFilteredStats();
+
+    // Helper function to format date for comparison
+    function formatDate(dateStr) {
+        if (!dateStr) return null;
+        
+        // First try to parse as YYYY-MM-DD (HTML date input format)
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            return date.getTime();
+        }
+        
+        // Fallback for other formats (MM/DD/YYYY)
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            return new Date(parts[2], parts[0] - 1, parts[1]).getTime();
+        }
+        
+        return null;
+    }
+
+    // Function to check if a value matches the filter (case-insensitive partial match)
+    function matchesFilter(value, filterText) {
+        if (!filterText) return true;
+        if (!value) return false;
+        return value.toString().toLowerCase().replace(/\s+/g, ' ').trim()
+            .includes(filterText.toLowerCase().replace(/\s+/g, ' ').trim());
+    }
+
+    // Function to clear all filters
+    function clearFilters() {
+        supervisorFilter.value = '';
+        flightFilter.value = '';
+        startDateFilter.value = '';
+        endDateFilter.value = '';
+        applyFilters();
+    }
+
+    // Function to apply all filters
+    function applyFilters() {
+        const supervisorValue = supervisorFilter.value.trim();
+        const flightValue = flightFilter.value.trim();
+        const startDate = startDateFilter.value ? formatDate(startDateFilter.value) : null;
+        const endDate = endDateFilter.value ? formatDate(endDateFilter.value) : null;
+
+        originalRows.forEach(row => {
+            const supervisor = row.cells[2].textContent; // Supervisor column
+            const flight = row.cells[3].textContent;    // Flight column
+            const rowDate = formatDate(row.cells[0].textContent); // Date column
+
+            const matchesSupervisor = !supervisorValue || matchesFilter(supervisor, supervisorValue);
+            const matchesFlight = !flightValue || matchesFilter(flight, flightValue);
+            const matchesDateRange = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+
+            row.style.display = (matchesSupervisor && matchesFlight && matchesDateRange) ? '' : 'none';
+        });
+
+        // Update statistics after filtering
+        updateFilteredStats();
+    }
+
+    // Function to update statistics based on filtered rows
+    function updateFilteredStats() {
+        const visibleRows = originalRows.filter(row => row.style.display !== 'none');
+        
+        // Update statistics in the summary cards
+        document.querySelector('[data-stat="total-reports"]').textContent = visibleRows.length;
+        
+        const totalPassengers = visibleRows.reduce((sum, row) => {
+            return sum + parseInt(row.cells[17].textContent || 0); // Total Attended column
+        }, 0);
+        document.querySelector('[data-stat="total-passengers"]').textContent = totalPassengers;
+
+        const uniqueFlights = new Set(visibleRows.map(row => row.cells[3].textContent));
+        document.querySelector('[data-stat="flights-covered"]').textContent = uniqueFlights.size;
+    }
+
+    // Add event listeners to filters
+    supervisorFilter.addEventListener('input', function() {
+        applyFilters();
+        updateFilterStyle(this);
+    });
+    flightFilter.addEventListener('input', function() {
+        applyFilters();
+        updateFilterStyle(this);
+    });
+    startDateFilter.addEventListener('change', function() {
+        applyFilters();
+        updateFilterStyle(this);
+    });
+    endDateFilter.addEventListener('change', function() {
+        applyFilters();
+        updateFilterStyle(this);
+    });
+    clearFilterBtn.addEventListener('click', function() {
+        clearFilters();
+        // Reset filter styles
+        [supervisorFilter, flightFilter, startDateFilter, endDateFilter].forEach(filter => {
+            filter.style.borderColor = '';
+            filter.style.backgroundColor = '';
+            filter.parentElement.classList.remove('active-filter');
+        });
+    });
+
+    // Function to update filter input styles
+    function updateFilterStyle(input) {
+        const hasValue = input.value.trim().length > 0;
+        input.parentElement.classList.toggle('active-filter', hasValue);
+        if (hasValue) {
+            input.style.borderColor = '#3B82F6';
+            input.style.backgroundColor = '#EFF6FF';
+        } else {
+            input.style.borderColor = '';
+            input.style.backgroundColor = '';
+        }
     }
 });

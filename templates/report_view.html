@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <div class="mb-4 flex justify-between items-center">
-        <a href="{{ request.referrer or url_for('team_lead.dashboard') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+        <a href="{{ request.referrer or url_for('team_lead.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition duration-150 ease-in-out">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
@@ -123,6 +123,69 @@
             <h3 class="text-lg font-medium text-gray-800 mb-3">Remarks</h3>
             <p class="text-gray-700">{{ report.remarks or 'No remarks provided' }}</p>
         </div>
+
+        {% if current_user.role == 'dataAnalyst' and not report.verified %}
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-medium text-gray-800 mb-4">Verify Report</h3>
+            <form method="POST" class="space-y-6">
+                {{ form.hidden_tag() }}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- IICS Section -->
+                    <div class="space-y-4">
+                        <h4 class="text-md font-medium text-gray-700">IICS Data</h4>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">IICS Infant</label>
+                            {{ form.iics_infant(class="w-full px-3 py-2 border rounded-md", type="number", min="0", id="iics_infant") }}
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">IICS Adult</label>
+                            {{ form.iics_adult(class="w-full px-3 py-2 border rounded-md", type="number", min="0", id="iics_adult") }}
+                        </div>
+                        <div class="pt-2 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-700">IICS Total:</span>
+                                <span id="iics_total_display" class="text-lg font-bold text-blue-600">0</span>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-sm font-medium text-gray-700">Difference:</span>
+                                <span id="iics_difference" class="text-lg font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GIA Section -->
+                    <div class="space-y-4">
+                        <h4 class="text-md font-medium text-gray-700">GIA Data</h4>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">GIA Infant</label>
+                            {{ form.gia_infant(class="w-full px-3 py-2 border rounded-md", type="number", min="0", id="gia_infant") }}
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">GIA Adult</label>
+                            {{ form.gia_adult(class="w-full px-3 py-2 border rounded-md", type="number", min="0", id="gia_adult") }}
+                        </div>
+                        <div class="pt-2 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-gray-700">GIA Total:</span>
+                                <span id="gia_total_display" class="text-lg font-bold text-blue-600">0</span>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-sm font-medium text-gray-700">Difference:</span>
+                                <span id="gia_difference" class="text-lg font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-150 ease-in-out">
+                        Verify Report
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

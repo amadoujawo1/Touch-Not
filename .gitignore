@@ -1,7 +1,7 @@
-<<<<<<< HEAD
+
 # Ingore environement files
 .env/
-<<<<<<< HEAD
+
 .idea/
  
 # Ignore cache folder and python compiled files
@@ -23,7 +23,7 @@ __pycache__/
 __pycache__/*.pyc
 
 
->>>>>>> bdb0bf89d0dd3f340f82d75981e9a20b4c3fd1fe
+
 # Ingore config file
 config.py
 =======
@@ -40,12 +40,13 @@ __pycache__/*.pyc
 config.py
 
 .idea/
-<<<<<<< HEAD
->>>>>>> 4f47e6cc45bc2b016e6ec4e28f1119074910d570
-=======
->>>>>>> dev
+
 
 # Ingore config file
 config.py
 
->>>>>>> bdb0bf89d0dd3f340f82d75981e9a20b4c3fd1fe
+../AssetDepreciationTracker-1.zip
+../Touch-Not-dev.zip
+../Touch-Not.zip
+../asset-depreciation/
+../cash-collection-app/
