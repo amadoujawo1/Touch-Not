@@ -93,6 +93,8 @@ class Report(db.Model):
     gia_infant = db.Column(db.Integer, default=0)
     gia_adult = db.Column(db.Integer, default=0)
     gia_total = db.Column(db.Integer, default=0)
+    iics_total_difference = db.Column(db.Integer, default=0)
+    gia_total_difference = db.Column(db.Integer, default=0)
     
     # Status
     verified = db.Column(db.Boolean, default=False)
@@ -109,6 +111,14 @@ class Report(db.Model):
     
     def __repr__(self):
         return f'<Report {self.ref_no} - {self.date}>'
+
+    @classmethod
+    def get_recent_entries(cls, user_id=None, limit=10):
+        """Get the most recent report entries"""
+        query = cls.query
+        if user_id:
+            query = query.filter_by(submitted_by_id=user_id)
+        return query.order_by(cls.created_at.desc()).limit(limit).all()
     
     def calculate_total(self):
         """Calculate total attended passengers"""
@@ -119,10 +129,27 @@ class Report(db.Model):
             self.prepaid_bank + self.round_trip + self.late_payment
         ) - self.refunds
     
+    def calculate_differences(self):
+        """Calculate differences between IICS/GIA totals and total attended"""
+        total_attended = self.calculate_total()
+        
+        # Calculate IICS total if not already set
+        if self.iics_total is None:
+            self.iics_total = (self.iics_adult or 0) + (self.iics_infant or 0)
+        
+        # Calculate GIA total if not already set
+        if self.gia_total is None:
+            self.gia_total = (self.gia_adult or 0) + (self.gia_infant or 0)
+        
+        # Calculate differences using real-time figures
+        self.iics_total_difference = (self.iics_total or 0) - total_attended
+        self.gia_total_difference = (self.gia_total or 0) - total_attended
+
     def to_dict(self):
         """Convert report to dictionary for API responses with proper JSON serialization"""
         try:
             total_attended = self.calculate_total()
+            self.calculate_differences()
         except (TypeError, AttributeError):
             total_attended = 0
             
@@ -234,6 +261,8 @@ class Report(db.Model):
             'giaInfant': safe_int(self.gia_infant),
             'giaAdult': safe_int(self.gia_adult),
             'giaTotal': safe_int(self.gia_total),
+            'iicsTotalDifference': safe_int(self.iics_total_difference),
+            'giaTotalDifference': safe_int(self.gia_total_difference),
             'verified': safe_bool(self.verified),
             'verifiedDate': safe_date(self.verified_date),
             'remarks': safe_str(self.remarks),

@@ -1,7 +1,7 @@
 # forms.py
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, DateField, IntegerField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
+from wtforms.validators import DataRequired, EqualTo, Length, ValidationError, NumberRange, Regexp
 import re
 
 class LoginForm(FlaskForm):
@@ -19,7 +19,7 @@ class RegisterForm(FlaskForm):
         DataRequired(), 
         EqualTo('password', message='Passwords must match')
     ])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Email', validators=[DataRequired(), Regexp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', message='Invalid email address format')])
     role = SelectField('Role', choices=[
         ('', 'Select a role'),
         ('teamLead', 'Team Lead'),

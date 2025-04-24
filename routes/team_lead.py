@@ -38,13 +38,13 @@ def dashboard():
 
     if activation and activation.date == datetime.now().date():
         is_update_activated = True
-        activated_date = activation.date
+        activated_date = activation.created_at  # Using created_at instead of date
+        is_update_activated = True
+        activated_date = activation.created_at
 
-    reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.date.desc()).all()
+    reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.verified.asc(), Report.date.desc()).all()
 
-    return render_template('team_lead/dashboard.html', 
-                          form=form, 
-                          reports=reports, 
+    return render_template('team_lead/dashboard.html', form=form, reports=reports,
                           is_update_activated=is_update_activated,
                           activated_date=activated_date)
 
@@ -147,6 +147,8 @@ def update_report(report_id):
     is_activated = False
 
     if activation and activation.date == datetime.now().date():
+        is_update_activated = True
+        activated_date = activation.created_at  # Using created_at instead of date
         is_activated = True
 
     if not is_activated:
@@ -215,6 +217,8 @@ def edit_report(report_id):
     is_activated = False
 
     if activation and activation.date == datetime.now().date():
+        is_update_activated = True
+        activated_date = activation.created_at  # Using created_at instead of date
         is_activated = True
 
     if not is_activated:
@@ -228,7 +232,7 @@ def edit_report(report_id):
 @team_lead_bp.route('/api/reports')
 @team_lead_required
 def get_reports():
-    reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.date.desc()).all()
+    reports = Report.query.filter_by(submitted_by_id=current_user.id).order_by(Report.verified.asc(), Report.date.desc()).all()
     return jsonify([report.to_dict() for report in reports])
 
 @team_lead_bp.route('/reports/<int:report_id>/download')

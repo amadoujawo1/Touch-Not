@@ -67,6 +67,10 @@ def verify_report(report_id):
         gia_adult = form.gia_adult.data
         gia_total = gia_infant + gia_adult
         
+        # Calculate differences
+        iics_total_difference = iics_total - report.total_attended if report.total_attended else 0
+        gia_total_difference = gia_total - report.total_attended if report.total_attended else 0
+        
         # Update report with verification data
         report.iics_infant = iics_infant
         report.iics_adult = iics_adult
@@ -74,6 +78,8 @@ def verify_report(report_id):
         report.gia_infant = gia_infant
         report.gia_adult = gia_adult
         report.gia_total = gia_total
+        report.iics_total_difference = iics_total_difference
+        report.gia_total_difference = gia_total_difference
         report.verified = True
         report.verified_by_id = current_user.id
         report.verified_date = datetime.utcnow()
@@ -148,6 +154,15 @@ def verification_totals():
         'iics_diff': iics_diff,
         'gia_diff': gia_diff
     })
+
+@data_analyst_bp.route('/get-recent-activations')
+@data_analyst_required
+def get_recent_activations():
+    # Get recent activations
+    recent_activations = TeamLeadActivation.query.order_by(TeamLeadActivation.created_at.desc()).limit(5).all()
+    return render_template('data_analyst/activations_list.html',
+                          recent_activations=recent_activations,
+                          now=datetime.now())
 
 @data_analyst_bp.route('/download-csv')
 @data_analyst_required
