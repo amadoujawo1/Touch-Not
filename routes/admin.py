@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from models import User, Flight, FlightSupervisor
+from models import User, Flight, FlightSupervisor, TeamLeadActivation, Report
 from forms import RegisterForm, FlightSupervisorForm
 from extensions import db
 
@@ -52,7 +52,7 @@ def manage_users():
 def activate_user(user_id):
     user = User.query.get_or_404(user_id)
     user.active = True
-    current_app.db.session.commit()
+    db.session.commit()
     flash(f'User {user.username} has been activated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -63,9 +63,11 @@ def deactivate_user(user_id):
     if user.username == 'admin':
         flash('Cannot deactivate admin user.', 'danger')
     else:
-        user.active = False
-        current_app.db.session.commit()
-        flash(f'User {user.username} has been deactivated.', 'success')
+        user.active = not user.active
+        db.session.commit()
+        
+        status = 'activated' if user.active else 'deactivated'
+        flash(f'User {user.username} has been {status}.', 'success')
     return redirect(url_for('admin.manage_users'))
 
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
@@ -74,10 +76,25 @@ def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     if user.username == 'admin':
         flash('Cannot delete admin user.', 'danger')
-    else:
-        current_app.db.session.delete(user)
-        current_app.db.session.commit()
-        flash(f'User {user.username} has been deleted.', 'success')
+        return redirect(url_for('admin.manage_users'))
+    
+    try:
+        # Update reports where this user is the verifier
+        Report.query.filter_by(verified_by_id=user.id).update({"verified_by_id": None})
+        # Delete reports submitted by this user
+        Report.query.filter_by(submitted_by_id=user.id).delete()
+        
+        # Clean up TeamLeadActivation records
+        TeamLeadActivation.query.filter_by(team_lead_id=user.id).delete()
+        TeamLeadActivation.query.filter_by(activated_by_id=user.id).delete()
+        
+        # Now delete the user
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'User {user.username} has been deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting user. Please try again.', 'danger')
     return redirect(url_for('admin.manage_users'))
 
 @admin_bp.route('/users/<int:user_id>/reset-password', methods=['POST'])
@@ -90,7 +107,7 @@ def reset_password(user_id):
         flash('Password is required.', 'danger')
     else:
         user.password_hash = generate_password_hash(new_password)
-        current_app.db.session.commit()
+        db.session.commit()
         flash(f'Password for {user.username} has been reset.', 'success')
     
     return redirect(url_for('admin.manage_users'))
@@ -108,7 +125,6 @@ def manage_flights_supervisors():
                           form=form)
 
 @admin_bp.route('/flights', methods=['POST'])
-
 @admin_required
 def add_flight():
     flight_name = request.form.get('flight_name')

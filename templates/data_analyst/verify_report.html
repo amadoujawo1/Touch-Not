@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Report{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-gray-50">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-semibold mb-6">Verify Report</h2>
+        
+        <form method="POST" class="space-y-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Report Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-medium mb-4">Report Information</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date</label>
+                            <div class="text-gray-900">{{ report.date.strftime('%Y-%m-%d') }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Supervisor</label>
+                            <div class="text-gray-900">{{ report.supervisor }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Flight</label>
+                            <div class="text-gray-900">{{ report.flight_name }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">IICS Verification</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="iics_infant" class="block text-sm font-medium text-gray-700">IICS Infant</label>
+                            {{ form.iics_infant(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", id="iics_infant") }}
+                        </div>
+                        <div>
+                            <label for="iics_adult" class="block text-sm font-medium text-gray-700">IICS Adult</label>
+                            {{ form.iics_adult(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500", id="iics_adult") }}
+                        </div>
+                        <div class="pt-2">
+                            <div class="flex justify-between items-center py-2 border-t">
+                                <span class="text-sm font-medium text-gray-700">IICS Total:</span>
+                                <span id="iics_total" class="text-lg font-semibold">0</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-t">
+                                <span class="text-sm font-medium text-gray-700">IICS Difference (Adult - Infant):</span>
+                                <span id="iics_difference" class="text-lg font-semibold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{{ url_for('data_analyst.dashboard') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </a>
+                {{ form.submit(class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/verify-report.js') }}"></script>
+{% endblock %}

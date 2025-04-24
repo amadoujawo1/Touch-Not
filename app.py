@@ -4,6 +4,12 @@ import pymysql
 from flask import Flask,render_template
 from extensions import db, login_manager
 from config import Config
+from flask_wtf.csrf import CSRFProtect
+from flask_migrate import Migrate
+# from flask_sqlalchemy import SQLAlchemy
+
+
+csrf = CSRFProtect()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,8 +28,10 @@ def create_mysql_database(app):
             try:
                 connection = pymysql.connect(
                     host=app.config.get('MYSQL_HOST', 'localhost'),
-                    user=app.config.get('MYSQL_USER', 'jawo'),
-                    password=app.config.get('MYSQL_PASSWORD', 'abc_123'),
+                    # port=3309,
+                    user=app.config.get('MYSQL_USER', 'root'),
+                    password=app.config.get('MYSQL_PASSWORD', 'MineOne'),
+                    port=3309,
                     charset='utf8mb4',
                     cursorclass=pymysql.cursors.DictCursor
                 )
@@ -105,6 +113,7 @@ def create_app():
     """Initialize Flask app."""
     app = Flask(__name__)
     app.config.from_object(Config)
+    csrf.init_app(app)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -125,5 +134,8 @@ def load_user(user_id):
 # Create and run the app
 app = create_app()
 
+# migrate = Migrate(app,db)
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5005, debug=True)

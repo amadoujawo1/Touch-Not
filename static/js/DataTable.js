@@ -1,294 +1,369 @@
 class DataTable {
-  constructor(tableId, options = {}) {
-    this.tableId = tableId;
-    this.table = document.getElementById(tableId);
-    this.tableBody = this.table ? this.table.querySelector('tbody') : null;
-    this.options = {
-      showVerification: false,
-      canEdit: false,
-      canVerify: false,
-      canDownload: false,
-      ...options
-    };
-    
-    this.init();
+  constructor(container) {
+    this.container = container;
+    this.currentUser = null; // Store the current user for role-based checks
+    this.uniqueSupervisors = [];
+    this.uniqueFlights = [];
   }
 
-  init() {
-    if (!this.table) return;
-    
-    // Initialize filters
-    this.initFilters();
-    
-    // Initialize actions
-    this.initActions();
-    
-    // Initialize download button if applicable
-    if (this.options.canDownload) {
-      this.initDownload();
-    }
+  setCurrentUser(user) {
+    this.currentUser = user;
   }
 
-  initFilters() {
-    const supervisorFilter = document.getElementById('supervisorFilter');
-    const flightFilter = document.getElementById('flightFilter');
-    const startDateFilter = document.getElementById('startDateFilter');
-    const endDateFilter = document.getElementById('endDateFilter');
-    
-    if (!supervisorFilter && !flightFilter && !startDateFilter && !endDateFilter) return;
-    
-    const filterFunction = () => {
-      if (!this.tableBody) return;
-      
-      const rows = this.tableBody.querySelectorAll('tr');
-      
-      rows.forEach(row => {
-        const supervisor = row.getAttribute('data-supervisor') || row.cells[2]?.textContent || '';
-        const flight = row.getAttribute('data-flight') || row.cells[3]?.textContent || '';
-        const date = row.getAttribute('data-date') || row.cells[0]?.textContent || '';
-        
-        // Apply filters
-        const matchesSupervisor = !supervisorFilter?.value || 
-                                 supervisor.toLowerCase().includes(supervisorFilter.value.toLowerCase());
-        const matchesFlight = !flightFilter?.value || 
-                             flight.toLowerCase().includes(flightFilter.value.toLowerCase());
-        
-        let matchesDate = true;
-        if (startDateFilter?.value && endDateFilter?.value) {
-          matchesDate = date >= startDateFilter.value && date <= endDateFilter.value;
-        } else if (startDateFilter?.value) {
-          matchesDate = date >= startDateFilter.value;
-        } else if (endDateFilter?.value) {
-          matchesDate = date <= endDateFilter.value;
-        }
-        
-        // Show/hide row
-        row.style.display = (matchesSupervisor && matchesFlight && matchesDate) ? '' : 'none';
-      });
-    };
-    
-    // Add event listeners
-    if (supervisorFilter) supervisorFilter.addEventListener('input', filterFunction);
-    if (flightFilter) flightFilter.addEventListener('input', filterFunction);
-    if (startDateFilter) startDateFilter.addEventListener('input', filterFunction);
-    if (endDateFilter) endDateFilter.addEventListener('input', filterFunction);
-  }
+  render({ data, showVerification, onVerify, onUpdate, onDownload, canDownload }) {
+    this.data = data;
+    this.showVerification = showVerification;
+    this.onVerify = onVerify;
+    this.onUpdate = onUpdate;
+    this.onDownload = onDownload;
+    this.canDownload = canDownload;
 
-  initActions() {
-    if (!this.tableBody) return;
-    
-    // Edit buttons
-    if (this.options.canEdit) {
-      this.tableBody.querySelectorAll('.update-report-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const reportId = btn.getAttribute('data-report-id');
-          this.openEditModal(reportId);
-        });
-      });
-    }
-    
-    // Verify buttons
-    if (this.options.canVerify) {
-      this.tableBody.querySelectorAll('.verify-report-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const reportId = btn.getAttribute('data-report-id');
-          window.location.href = `/data-analyst/reports/${reportId}/verify`;
-        });
-      });
-    }
-  }
+    // Extract unique supervisors and flights
+    this.uniqueSupervisors = [...new Set(data.map(item => item.supervisor))].sort();
+    this.uniqueFlights = [...new Set(data.map(item => item.flightName).filter(Boolean))].sort();
 
-  initDownload() {
-    const downloadBtn = document.getElementById('downloadBtn');
-    if (!downloadBtn) return;
-    
-    downloadBtn.addEventListener('click', () => {
-      const supervisorFilter = document.getElementById('supervisorFilter')?.value || '';
-      const flightFilter = document.getElementById('flightFilter')?.value || '';
-      const startDateFilter = document.getElementById('startDateFilter')?.value || '';
-      const endDateFilter = document.getElementById('endDateFilter')?.value || '';
-      
-      // Build query params
-      const params = new URLSearchParams();
-      if (supervisorFilter) params.append('supervisor', supervisorFilter);
-      if (flightFilter) params.append('flight', flightFilter);
-      if (startDateFilter) params.append('start_date', startDateFilter);
-      if (endDateFilter) params.append('end_date', endDateFilter);
-      
-      // Redirect to download endpoint
-      window.location.href = `/cash-controller/download-csv?${params.toString()}`;
-    });
-  }
-
-  async openEditModal(reportId) {
-    try {
-      // Fetch report data
-      const response = await fetch(`/team-lead/api/reports?id=${reportId}`);
-      if (!response.ok) throw new Error('Failed to fetch report data');
-      
-      const data = await response.json();
-      
-      if (data.length === 0) throw new Error('Report not found');
-      
-      const report = data[0];
-      
-      // Get modal elements
-      const modal = document.getElementById('updateReportModal');
-      const modalBody = document.getElementById('updateReportModalBody');
-      
-      if (!modal || !modalBody) throw new Error('Modal elements not found');
-      
-      // Create form HTML
-      const formHtml = this.createEditForm(report, reportId);
-      modalBody.innerHTML = formHtml;
-      
-      // Initialize form events
-      this.initEditForm();
-      
-      // Show modal
-      new bootstrap.Modal(modal).show();
-      
-    } catch (error) {
-      console.error('Error opening edit modal:', error);
-      alert('Failed to load report data. Please try again.');
-    }
-  }
-
-  createEditForm(report, reportId) {
-    return `
-      <form id="updateReportForm" method="POST" action="/team-lead/reports/${reportId}/update">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="form-group">
-            <label for="paid">Paid</label>
-            <input type="number" id="paid" name="paid" class="form-control" value="${report.paid || 0}" min="0">
+    this.container.innerHTML = `
+      <div class="space-y-4">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="p-4 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Filter Reports</h3>
           </div>
-          <div class="form-group">
-            <label for="diplomats">Diplomats</label>
-            <input type="number" id="diplomats" name="diplomats" class="form-control" value="${report.diplomats || 0}" min="0">
+          <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="space-y-2">
+              <label for="supervisorFilter" class="block text-sm font-medium text-gray-700">Supervisor</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-user"></i>
+                </span>
+                <select id="supervisorFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Supervisors</option>
+                  ${this.uniqueSupervisors.map(supervisor => `<option value="${supervisor}">${supervisor}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="flightFilter" class="block text-sm font-medium text-gray-700">Flight</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-plane"></i>
+                </span>
+                <select id="flightFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                  <option value="">All Flights</option>
+                  ${this.uniqueFlights.map(flight => `<option value="${flight}">${flight}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="startDateFilter" class="block text-sm font-medium text-gray-700">Start Date</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-calendar"></i>
+                </span>
+                <input type="date" id="startDateFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="endDateFilter" class="block text-sm font-medium text-gray-700">End Date</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                  <i class="fas fa-calendar"></i>
+                </span>
+                <input type="date" id="endDateFilter" 
+                  class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="infants">Infants</label>
-            <input type="number" id="infants" name="infants" class="form-control" value="${report.infants || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="not_paid">Not Paid</label>
-            <input type="number" id="not_paid" name="not_paid" class="form-control" value="${report.notPaid || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="paid_card_qr">Paid Card/QR</label>
-            <input type="number" id="paid_card_qr" name="paid_card_qr" class="form-control" value="${report.paidCardQr || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="refunds">Refunds</label>
-            <input type="number" id="refunds" name="refunds" class="form-control" value="${report.refunds || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="deportees">Deportees</label>
-            <input type="number" id="deportees" name="deportees" class="form-control" value="${report.deportees || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="transit">Transit</label>
-            <input type="number" id="transit" name="transit" class="form-control" value="${report.transit || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="waivers">Waivers</label>
-            <input type="number" id="waivers" name="waivers" class="form-control" value="${report.waivers || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="prepaid_bank">Prepaid Bank</label>
-            <input type="number" id="prepaid_bank" name="prepaid_bank" class="form-control" value="${report.prepaidBank || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="round_trip">Round Trip</label>
-            <input type="number" id="round_trip" name="round_trip" class="form-control" value="${report.roundTrip || 0}" min="0">
-          </div>
-          <div class="form-group">
-            <label for="late_payment">Late Payment</label>
-            <input type="number" id="late_payment" name="late_payment" class="form-control" value="${report.latePayment || 0}" min="0">
-          </div>
+          ${canDownload ? `
+            <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button id="downloadBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-download mr-2"></i>
+                Download Verified Reports
+              </button>
+            </div>
+          ` : ''}
         </div>
-        
-        <div class="mt-4">
-          <label>Total Attended:</label>
-          <span id="editTotalAttended" class="font-bold ml-2">0</span>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden mt-4">
+          <div class="overflow-x-auto">
+            <div class="table-container max-h-[600px] overflow-y-auto">
+              <table class="min-w-full divide-y divide-gray-200 table-auto">
+                <thead class="bg-gray-50 sticky top-0 z-20">
+                  <tr class="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                ${[
+                  'Date', 'Ref No', 'Supervisor', 'Flight Name', 'Zone', 'Paid', 'Diplomats', 'Infants', 'Not Paid', 'Paid Card/QR', 'Refunds', 'Deportees', 'Transit', 'Waivers', 'Prepaid Bank', 'Round Trip', 'Late Payment', 'Total Attended',
+                  ...(showVerification ? ['IICS Infant', 'IICS Adult', 'IICS Total', 'GIA Infant', 'GIA Adult', 'GIA Total', 'IICS-Total Difference', 'GIA-Total Difference'] : []),
+                  'Status',
+                  ...(showVerification || (onUpdate && this.currentUser && this.currentUser.role === 'teamLead' && storage.isUpdateActivated(this.currentUser.username)) ? ['Actions'] : []),
+                ].map(header => `
+                  <th class="px-0.5 py-0.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50 z-20 sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+                    ${header}
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="tableBody">
+              ${this.renderRows(data, showVerification, onUpdate)}
+            </tbody>
+          </table>
         </div>
-        
-        <div class="form-group mt-4">
-          <label for="remarks">Remarks</label>
-          <textarea id="remarks" name="remarks" class="form-control" rows="3">${report.remarks || ''}</textarea>
-        </div>
-        
-        <div class="mt-4 flex justify-end space-x-2">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update Report</button>
-        </div>
-      </form>
+      </div>
     `;
+
+    const tableBody = this.container.querySelector('#tableBody');
+    const supervisorFilter = this.container.querySelector('#supervisorFilter');
+    const flightFilter = this.container.querySelector('#flightFilter');
+    const startDateFilter = this.container.querySelector('#startDateFilter');
+    const endDateFilter = this.container.querySelector('#endDateFilter');
+    const downloadBtn = this.container.querySelector('#downloadBtn');
+
+    if (showVerification && this.currentUser && this.currentUser.role === 'dataAnalyst') {
+      tableBody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+          const row = e.target.closest('tr');
+          const id = row.dataset.id;
+          if (row && id && !row.dataset.verified) {
+            this.enableVerificationEditing(row, id, onVerify);
+          } else {
+            alert('This report is already verified or cannot be edited.');
+          }
+        }
+      });
+    }
+
+    if (onUpdate && this.currentUser && this.currentUser.role === 'teamLead') {
+      tableBody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('update-btn')) {
+          const row = e.target.closest('tr');
+          const id = row.dataset.id;
+          const isActivated = row.dataset.canUpdate === 'true';
+          if (isActivated) {
+            this.enableUpdateEditing(row, id, onUpdate);
+          } else {
+            alert('You do not have permission to update this report. Contact the Data Analyst for activation.');
+          }
+        }
+      });
+    }
+
+    const filterTable = () => {
+      const filteredData = this.data.filter((item) => {
+        const matchesSupervisor = !supervisorFilter.value || item.supervisor === supervisorFilter.value;
+        const matchesFlight = !flightFilter.value || item.flightName === flightFilter.value;
+        const itemDate = new Date(item.date);
+        const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
+        const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
+        let matchesDate = true;
+        if (startDate && endDate) {
+          matchesDate = itemDate >= startDate && itemDate <= endDate;
+        } else if (startDate) {
+          matchesDate = itemDate >= startDate;
+        } else if (endDate) {
+          matchesDate = itemDate <= endDate;
+        }
+        return matchesSupervisor && matchesFlight && matchesDate;
+      });
+      tableBody.innerHTML = this.renderRows(filteredData, showVerification, onUpdate);
+    };
+
+    supervisorFilter.addEventListener('input', filterTable);
+    flightFilter.addEventListener('input', filterTable);
+    startDateFilter.addEventListener('input', filterTable);
+    endDateFilter.addEventListener('input', filterTable);
+
+    if (downloadBtn && canDownload) {
+      downloadBtn.addEventListener('click', () => {
+        onDownload(this.data.filter(item => item.verified));
+      });
+    }
   }
 
-  initEditForm() {
-    const form = document.getElementById('updateReportForm');
-    if (!form) return;
-    
-    const totalElement = document.getElementById('editTotalAttended');
-    
-    // Calculate total function
-    const calculateTotal = () => {
-      if (!totalElement) return;
-      
-      const formData = new FormData(form);
-      const sum = [
-        'paid', 'diplomats', 'infants', 'not_paid', 'paid_card_qr',
-        'deportees', 'transit', 'waivers', 'prepaid_bank',
-        'round_trip', 'late_payment'
-      ].reduce((sum, field) => {
-        return sum + Number(formData.get(field) || 0);
-      }, 0);
-      
-      const refunds = Number(formData.get('refunds') || 0);
-      totalElement.textContent = sum - refunds;
-    };
-    
-    // Add event listeners
-    form.querySelectorAll('input[type="number"]').forEach(input => {
-      input.addEventListener('input', calculateTotal);
-    });
-    
-    // Initial calculation
-    calculateTotal();
-    
-    // Form submission
-    form.addEventListener('submit', (e) => {
-      if (!confirm('Are you sure you want to update this report? It will need to be verified again.')) {
-        e.preventDefault();
+  renderRows(data, showVerification, onUpdate) {
+    if (data.length === 0) {
+      return `<tr><td colspan="${showVerification ? 26 : 18}" class="px-0.5 py-0.5 text-center text-gray-500 sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">No data available</td></tr>`;
+    }
+
+    return data.map(item => `
+      <tr data-id="${item.id}" data-verified="${item.verified}" data-can-update="${storage.isUpdateActivated(this.currentUser?.username)}">
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.date}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refNo}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.supervisor}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.flightName || 'N/A'}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap capitalize sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.zone}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paid || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.diplomats || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.infants || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.notPaid || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.paidCardQr || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.refunds || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.deportees || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.transit || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.waivers || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.prepaidBank || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.roundTrip || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.latePayment || 0}</td>
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${item.totalAttended || 0}</td>
+        ${showVerification ? `
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left iics-infant sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.iicsInfant || 0}" placeholder="0">
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left iics-adult sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.iicsAdult || 0}" placeholder="0">
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left iics-total sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.iicsTotal || 0}" placeholder="0" readonly>
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left gia-infant sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.giaInfant || 0}" placeholder="0">
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left gia-adult sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.giaAdult || 0}" placeholder="0">
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <input type="number" min="0" class="w-[80px] min-w-[60px] h-8 px-0.5 py-0.25 border rounded-md text-xs font-medium overflow-auto text-left gia-total sm:w-[60px] sm:min-w-[50px] sm:h-6 sm:px-0.25 sm:py-0.125 sm:text-2xs md:w-[80px] md:min-w-[60px] md:h-8 md:px-0.5 md:py-0.25 md:text-xs" value="${item.giaTotal || 0}" placeholder="0" readonly>
+          </td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${(item.iicsTotal || 0) - (item.totalAttended || 0)}</td>
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">${(item.giaTotal || 0) - (item.totalAttended || 0)}</td>
+        ` : ''}
+        <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} sm:text-xs md:text-sm">
+            ${item.verified ? 'Verified' : 'Pending'}
+          </span>
+        </td>
+        ${showVerification && !item.verified && this.currentUser && this.currentUser.role === 'dataAnalyst' ? `
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <button class="edit-btn px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm">Edit</button>
+          </td>
+        ` : (onUpdate && this.currentUser && this.currentUser.role === 'teamLead' && storage.isUpdateActivated(this.currentUser.username)) ? `
+          <td class="px-0.5 py-0.5 whitespace-nowrap sm:px-0.5 sm:py-0.5 md:px-0.5 md:py-0.5">
+            <button class="update-btn px-3 py-1 text-white rounded-md sm:px-2 sm:py-0.5 md:px-3 md:py-1 sm:text-xs md:text-sm ${storage.isUpdateActivated(this.currentUser?.username) ? 'bg-green-600 hover:bg-green-700 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}" ${!storage.isUpdateActivated(this.currentUser?.username) ? 'disabled' : ''}>Update</button>
+          </td>
+        ` : ''}
+      </tr>
+    `).join('');
+  }
+
+  enableVerificationEditing(row, id, onVerify) {
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const editBtn = row.querySelector('.edit-btn');
+
+    inputs.forEach(input => {
+      input.removeAttribute('readonly');
+      input.classList.add('border-blue-500');
+
+      if (input.classList.contains('iics-infant') || input.classList.contains('iics-adult')) {
+        input.addEventListener('input', () => {
+          const iicsInfant = parseInt(row.querySelector('.iics-infant').value) || 0;
+          const iicsAdult = parseInt(row.querySelector('.iics-adult').value) || 0;
+          row.querySelector('.iics-total').value = iicsInfant + iicsAdult;
+        });
+      }
+
+      if (input.classList.contains('gia-infant') || input.classList.contains('gia-adult')) {
+        input.addEventListener('input', () => {
+          const giaInfant = parseInt(row.querySelector('.gia-infant').value) || 0;
+          const giaAdult = parseInt(row.querySelector('.gia-adult').value) || 0;
+          row.querySelector('.gia-total').value = giaInfant + giaAdult;
+        });
       }
     });
+
+    editBtn.textContent = 'Save';
+    editBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    editBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+    const originalClickHandler = editBtn.onclick;
+    editBtn.onclick = async () => {
+      const verificationData = {
+        id,
+        iicsInfant: parseInt(row.querySelector('.iics-infant').value) || 0,
+        iicsAdult: parseInt(row.querySelector('.iics-adult').value) || 0,
+        iicsTotal: parseInt(row.querySelector('.iics-total').value) || 0,
+        giaInfant: parseInt(row.querySelector('.gia-infant').value) || 0,
+        giaAdult: parseInt(row.querySelector('.gia-adult').value) || 0,
+        giaTotal: parseInt(row.querySelector('.gia-total').value) || 0
+      };
+
+      await onVerify(verificationData);
+
+      inputs.forEach(input => {
+        input.setAttribute('readonly', true);
+        input.classList.remove('border-blue-500');
+      });
+
+      editBtn.textContent = 'Edit';
+      editBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+      editBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      editBtn.onclick = originalClickHandler;
+    };
+  }
+
+  enableUpdateEditing(row, id, onUpdate) {
+    const cells = row.querySelectorAll('td');
+    const updateBtn = row.querySelector('.update-btn');
+    const originalValues = {};
+    const editableCells = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]; // Indices of editable cells
+
+    editableCells.forEach(index => {
+      const cell = cells[index];
+      const value = cell.textContent.trim();
+      originalValues[index] = value;
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.value = value;
+      input.className = 'w-full px-2 py-1 border rounded text-sm';
+
+      cell.textContent = '';
+      cell.appendChild(input);
+    });
+
+    updateBtn.textContent = 'Save';
+    updateBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+    updateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+    const originalClickHandler = updateBtn.onclick;
+    updateBtn.onclick = async () => {
+      const updateData = {
+        id,
+        paid: parseInt(cells[5].querySelector('input').value) || 0,
+        diplomats: parseInt(cells[6].querySelector('input').value) || 0,
+        infants: parseInt(cells[7].querySelector('input').value) || 0,
+        notPaid: parseInt(cells[8].querySelector('input').value) || 0,
+        paidCardQr: parseInt(cells[9].querySelector('input').value) || 0,
+        refunds: parseInt(cells[10].querySelector('input').value) || 0,
+        deportees: parseInt(cells[11].querySelector('input').value) || 0,
+        transit: parseInt(cells[12].querySelector('input').value) || 0,
+        waivers: parseInt(cells[13].querySelector('input').value) || 0,
+        prepaidBank: parseInt(cells[14].querySelector('input').value) || 0,
+        roundTrip: parseInt(cells[15].querySelector('input').value) || 0,
+        latePayment: parseInt(cells[16].querySelector('input').value) || 0
+      };
+
+      try {
+        await onUpdate(updateData);
+
+        editableCells.forEach(index => {
+          const cell = cells[index];
+          const input = cell.querySelector('input');
+          cell.textContent = input.value;
+        });
+
+        updateBtn.textContent = 'Update';
+        updateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        updateBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        updateBtn.onclick = originalClickHandler;
+      } catch (error) {
+        console.error('Error updating report:', error);
+        alert('Failed to update report. Please try again.');
+
+        editableCells.forEach(index => {
+          const cell = cells[index];
+          cell.textContent = originalValues[index];
+        });
+      }
+    };
   }
 }
-
-// Initialize data tables when document is ready
-document.addEventListener('DOMContentLoaded', function() {
-  // Team Lead reports table
-  if (document.getElementById('teamLeadReportsTable')) {
-    const isUpdateActivated = !!document.querySelector('[data-update-activated="true"]');
-    new DataTable('teamLeadReportsTable', {
-      canEdit: isUpdateActivated
-    });
-  }
-  
-  // Data Analyst reports table
-  if (document.getElementById('dataAnalystReportsTable')) {
-    new DataTable('dataAnalystReportsTable', {
-      showVerification: true,
-      canVerify: true,
-      canDownload: true
-    });
-  }
-  
-  // Cash Controller reports table
-  if (document.getElementById('cashControllerReportsTable')) {
-    new DataTable('cashControllerReportsTable', {
-      canDownload: true
-    });
-  }
-});

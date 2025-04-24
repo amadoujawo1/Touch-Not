@@ -1,5 +1,5 @@
 # models.py
-from datetime import datetime
+from datetime import datetime, date
 from flask_login import UserMixin
 from extensions import db
 
@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    reports = db.relationship('Report', backref='submitter', lazy='dynamic', foreign_keys='Report.submitted_by_id')
+    reports = db.relationship('Report', backref=db.backref('submitter', uselist=False), lazy='dynamic', foreign_keys='Report.submitted_by_id')
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -45,7 +45,28 @@ class Report(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
-    ref_no = db.Column(db.String(50), nullable=False)
+    ref_no = db.Column(db.String(50), unique=True, nullable=False)
+    
+    @staticmethod
+    def generate_ref_no():
+        """Generate a unique reference number"""
+        # Get the latest report ordered by id
+        latest_report = Report.query.order_by(Report.id.desc()).first()
+        
+        # If no reports exist, start with 1, otherwise increment the last number
+        if not latest_report:
+            next_number = 1
+        else:
+            # Extract the number from the last ref_no and increment it
+            try:
+                last_number = int(latest_report.ref_no)
+                next_number = last_number + 1
+            except ValueError:
+                # If the last ref_no wasn't a number, start with 1
+                next_number = 1
+        
+        return str(next_number)
+    
     supervisor = db.Column(db.String(100), nullable=False)
     flight_name = db.Column(db.String(100), nullable=False)
     zone = db.Column(db.String(20), nullable=False)  # arrival, departure
@@ -72,9 +93,12 @@ class Report(db.Model):
     gia_infant = db.Column(db.Integer, default=0)
     gia_adult = db.Column(db.Integer, default=0)
     gia_total = db.Column(db.Integer, default=0)
+    iics_total_difference = db.Column(db.Integer, default=0)
+    gia_total_difference = db.Column(db.Integer, default=0)
     
     # Status
     verified = db.Column(db.Boolean, default=False)
+    verified_date = db.Column(db.DateTime)
     remarks = db.Column(db.Text)
     
     # Relationships
@@ -87,6 +111,14 @@ class Report(db.Model):
     
     def __repr__(self):
         return f'<Report {self.ref_no} - {self.date}>'
+
+    @classmethod
+    def get_recent_entries(cls, user_id=None, limit=10):
+        """Get the most recent report entries"""
+        query = cls.query
+        if user_id:
+            query = query.filter_by(submitted_by_id=user_id)
+        return query.order_by(cls.created_at.desc()).limit(limit).all()
     
     def calculate_total(self):
         """Calculate total attended passengers"""
@@ -97,38 +129,147 @@ class Report(db.Model):
             self.prepaid_bank + self.round_trip + self.late_payment
         ) - self.refunds
     
+    def calculate_differences(self):
+        """Calculate differences between IICS/GIA totals and total attended"""
+        total_attended = self.calculate_total()
+        
+        # Calculate IICS total if not already set
+        if self.iics_total is None:
+            self.iics_total = (self.iics_adult or 0) + (self.iics_infant or 0)
+        
+        # Calculate GIA total if not already set
+        if self.gia_total is None:
+            self.gia_total = (self.gia_adult or 0) + (self.gia_infant or 0)
+        
+        # Calculate differences using real-time figures
+        self.iics_total_difference = (self.iics_total or 0) - total_attended
+        self.gia_total_difference = (self.gia_total or 0) - total_attended
+
     def to_dict(self):
-        """Convert report to dictionary for API responses"""
+        """Convert report to dictionary for API responses with proper JSON serialization"""
+        try:
+            total_attended = self.calculate_total()
+            self.calculate_differences()
+        except (TypeError, AttributeError):
+            total_attended = 0
+            
+        def safe_int(value):
+            try:
+                return int(value) if value is not None else 0
+            except (TypeError, ValueError):
+                return 0
+                
+        def safe_str(value):
+            return str(value) if value else ''
+            
+        def safe_date(value):
+            try:
+                if value is None or value == "undefined" or value == "" or value == "null" or value == "NaN":
+                    return None
+                if isinstance(value, str):
+                    value = value.strip()
+                    if not value:
+                        return None
+                    try:
+                        # Try to parse string as datetime with microseconds
+                        parsed_date = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+                        return parsed_date.strftime('%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        try:
+                            # Try to parse string as datetime
+                            parsed_date = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                            return parsed_date.strftime('%Y-%m-%d %H:%M:%S')
+                        except ValueError:
+                            try:
+                                # Try to parse string as date
+                                parsed_date = datetime.strptime(value, '%Y-%m-%d')
+                                return parsed_date.strftime('%Y-%m-%d')
+                            except ValueError:
+                                return None
+                if isinstance(value, datetime):
+                    return value.strftime('%Y-%m-%d %H:%M:%S')
+                if isinstance(value, date):
+                    return value.strftime('%Y-%m-%d')
+                return None
+            except (AttributeError, ValueError, TypeError):
+                return None
+                
+        def safe_username(user):
+            if user is None or isinstance(user, type(None)) or user == "undefined":
+                return ""
+            try:
+                # Handle User object directly
+                if isinstance(user, User):
+                    return user.username if hasattr(user, 'username') else ""
+                # Handle user ID
+                if isinstance(user, (int, str)):
+                    try:
+                        # Convert to string and strip any whitespace
+                        user_str = str(user).strip()
+                        # Check if the string is empty or contains invalid values
+                        if not user_str or user_str.lower() in ["undefined", "null", "nan", ""]:
+                            return ""
+                        # Check if the string is a valid number
+                        if user_str.isdigit():
+                            user_id = int(user_str)
+                            # First try to get user from relationships
+                            if hasattr(self, 'verified_by') and self.verified_by and self.verified_by.id == user_id:
+                                return self.verified_by.username
+                            if hasattr(self, 'submitter') and self.submitter and self.submitter.id == user_id:
+                                return self.submitter.username
+                            # If not found in relationships, try database lookup
+                            try:
+                                user_obj = User.query.get(user_id)
+                                if user_obj and hasattr(user_obj, 'username'):
+                                    return user_obj.username
+                            except Exception:
+                                return ""
+                    except (ValueError, TypeError, AttributeError):
+                        return ""
+                return ""
+            except Exception:
+                return ""
+            
+        def safe_bool(value):
+            if value is None:
+                return False
+            return bool(value)
+            
         return {
-            'id': self.id,
-            'date': self.date.strftime('%Y-%m-%d'),
-            'refNo': self.ref_no,
-            'supervisor': self.supervisor,
-            'flightName': self.flight_name,
-            'zone': self.zone,
-            'paid': self.paid,
-            'diplomats': self.diplomats,
-            'infants': self.infants,
-            'notPaid': self.not_paid,
-            'paidCardQr': self.paid_card_qr,
-            'refunds': self.refunds,
-            'deportees': self.deportees,
-            'transit': self.transit,
-            'waivers': self.waivers,
-            'prepaidBank': self.prepaid_bank,
-            'roundTrip': self.round_trip,
-            'latePayment': self.late_payment,
-            'totalAttended': self.total_attended,
-            'iicsInfant': self.iics_infant,
-            'iicsAdult': self.iics_adult,
-            'iicsTotal': self.iics_total,
-            'giaInfant': self.gia_infant,
-            'giaAdult': self.gia_adult,
-            'giaTotal': self.gia_total,
-            'verified': self.verified,
-            'remarks': self.remarks,
-            'submittedBy': self.submitter.username if self.submitter else None,
-            'verifiedBy': self.verified_by.username if self.verified_by else None
+            'id': safe_int(self.id),
+            'date': safe_date(self.date),
+            'refNo': safe_str(self.ref_no),
+            'supervisor': safe_str(self.supervisor),
+            'flightName': safe_str(self.flight_name),
+            'zone': safe_str(self.zone),
+            'paid': safe_int(self.paid),
+            'diplomats': safe_int(self.diplomats),
+            'infants': safe_int(self.infants),
+            'notPaid': safe_int(self.not_paid),
+            'paidCardQr': safe_int(self.paid_card_qr),
+            'refunds': safe_int(self.refunds),
+            'deportees': safe_int(self.deportees),
+            'transit': safe_int(self.transit),
+            'waivers': safe_int(self.waivers),
+            'prepaidBank': safe_int(self.prepaid_bank),
+            'roundTrip': safe_int(self.round_trip),
+            'latePayment': safe_int(self.late_payment),
+            'totalAttended': safe_int(total_attended),
+            'iicsInfant': safe_int(self.iics_infant),
+            'iicsAdult': safe_int(self.iics_adult),
+            'iicsTotal': safe_int(self.iics_total),
+            'giaInfant': safe_int(self.gia_infant),
+            'giaAdult': safe_int(self.gia_adult),
+            'giaTotal': safe_int(self.gia_total),
+            'iicsTotalDifference': safe_int(self.iics_total_difference),
+            'giaTotalDifference': safe_int(self.gia_total_difference),
+            'verified': safe_bool(self.verified),
+            'verifiedDate': safe_date(self.verified_date),
+            'remarks': safe_str(self.remarks),
+            'submittedBy': safe_username(self.submitted_by_id),
+            'verifiedBy': safe_username(self.verified_by_id),
+            'createdAt': safe_date(self.created_at),
+            'updatedAt': safe_date(self.updated_at)
         }
 
 class TeamLeadActivation(db.Model):

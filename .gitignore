@@ -1,5 +1,7 @@
+
 # Ingore environement files
 .env/
+
 .idea/
  
 # Ignore cache folder and python compiled files
@@ -9,5 +11,42 @@ routes/__pycache__/*.pyc
 
 
  
+=======
+env9/
+.idea/
+ env/
+
+
+# Ignore cache folder and python compiled files
+*.pyc
+__pycache__/
+__pycache__/*.pyc
+
+
+
 # Ingore config file
 config.py
+=======
+# Ingore environement files
+# .env/
+
+# Ignore cache folder and python compiled files
+*.pyc
+__pycache__/
+__pycache__/*.pyc
+
+
+# Ingore config file
+config.py
+
+.idea/
+
+
+# Ingore config file
+config.py
+
+../AssetDepreciationTracker-1.zip
+../Touch-Not-dev.zip
+../Touch-Not.zip
+../asset-depreciation/
+../cash-collection-app/
