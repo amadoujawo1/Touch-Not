@@ -8,22 +8,26 @@ from config import Config
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
+from urllib.parse import urlparse
+
 def create_mysql_database(app):
-    """Create the MySQL database if it doesn't exist - for local MySQL setup"""
+    """Create the MySQL database if it doesn't exist - parses URI for credentials"""
     try:
         full_uri = app.config['SQLALCHEMY_DATABASE_URI']
         if 'mysql+pymysql' in full_uri:
-            uri_parts = full_uri.split('/')
-            db_name = uri_parts[-1].split('?')[0]  # Extract database name
-
+            # Parse the URI to get credentials
+            parsed = urlparse(full_uri)
+            db_name = parsed.path.lstrip('/')
+            
             # Connect to MySQL server (without specifying a database)
             logging.info(f"Attempting to create database '{db_name}' if it doesn't exist")
 
             try:
                 connection = pymysql.connect(
-                    host=app.config.get('MYSQL_HOST', 'localhost'),
-                    user=app.config.get('MYSQL_USER', 'jawo'),
-                    password=app.config.get('MYSQL_PASSWORD', 'abc_123'),
+                    host=parsed.hostname or 'localhost',
+                    port=parsed.port or 3306,
+                    user=parsed.username or 'root',
+                    password=parsed.password or '',
                     charset='utf8mb4',
                     cursorclass=pymysql.cursors.DictCursor
                 )
