@@ -3,266 +3,252 @@
 {% block title %}Team Lead Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Team Lead Dashboard</h1>
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-4xl font-bold" style="color: #1e3a8a; text-shadow: 0 2px 10px rgba(255,255,255,0.5);">Team Lead Dashboard</h1>
+        {% if is_update_activated %}
+            <div class="glass-badge badge-verified flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> Updates enabled for today ({{ activated_date }})
+            </div>
+        {% endif %}
+    </div>
 
-    {% if is_update_activated %}
-        <div class="alert alert-success">Updates enabled for today ({{ activated_date }})</div>
-    {% endif %}
-
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>Submit New Report</h2>
+    <div class="glass-card mb-8">
+        <div class="glass-header flex items-center gap-3">
+            <i class="fas fa-file-invoice text-indigo-600"></i> Submit New Report
         </div>
-        <div class="card-body">
+        <div class="glass-body">
             <form method="POST" action="{{ url_for('team_lead.submit_report') }}">
                 {{ form.csrf_token }}
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {{ form.date.label }}
-                            {{ form.date(class="form-control") }}
-                        </div>
+                
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-200 pb-2">General Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        {{ form.date.label }}
+                        {{ form.date(class="glass-input") }}
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {{ form.ref_no.label }}
-                            {{ form.ref_no(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.ref_no.label }}
+                        {{ form.ref_no(class="glass-input") }}
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {{ form.zone.label }}
-                            {{ form.zone(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.zone.label }}
+                        {{ form.zone(class="glass-input") }}
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.flight.label }}
-                            {{ form.flight(class="form-control") }}
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        {{ form.flight.label }}
+                        {{ form.flight(class="glass-input") }}
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.supervisor.label }}
-                            {{ form.supervisor(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.supervisor.label }}
+                        {{ form.supervisor(class="glass-input") }}
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.paid.label }}
-                            {{ form.paid(class="form-control") }}
-                        </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b border-gray-200 pb-2">Passenger Breakdown</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        {{ form.paid.label }}
+                        {{ form.paid(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.diplomats.label }}
-                            {{ form.diplomats(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.diplomats.label }}
+                        {{ form.diplomats(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.infants.label }}
-                            {{ form.infants(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.infants.label }}
+                        {{ form.infants(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.not_paid.label }}
-                            {{ form.not_paid(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.not_paid.label }}
+                        {{ form.not_paid(class="glass-input") }}
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.paid_card_qr.label }}
-                            {{ form.paid_card_qr(class="form-control") }}
-                        </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        {{ form.paid_card_qr.label }}
+                        {{ form.paid_card_qr(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.refunds.label }}
-                            {{ form.refunds(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.refunds.label }}
+                        {{ form.refunds(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.deportees.label }}
-                            {{ form.deportees(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.deportees.label }}
+                        {{ form.deportees(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.transit.label }}
-                            {{ form.transit(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.transit.label }}
+                        {{ form.transit(class="glass-input") }}
                     </div>
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.waivers.label }}
-                            {{ form.waivers(class="form-control") }}
-                        </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div>
+                        {{ form.waivers.label }}
+                        {{ form.waivers(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.prepaid_bank.label }}
-                            {{ form.prepaid_bank(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.prepaid_bank.label }}
+                        {{ form.prepaid_bank(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.round_trip.label }}
-                            {{ form.round_trip(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.round_trip.label }}
+                        {{ form.round_trip(class="glass-input") }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            {{ form.late_payment.label }}
-                            {{ form.late_payment(class="form-control") }}
-                        </div>
+                    <div>
+                        {{ form.late_payment.label }}
+                        {{ form.late_payment(class="glass-input") }}
                     </div>
                 </div>
 
-                <div class="form-group mt-3">
+                <div class="mb-6">
                     {{ form.remarks.label }}
-                    {{ form.remarks(class="form-control") }}
+                    {{ form.remarks(class="glass-input", rows="3") }}
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Submit Report</button>
+                <div class="flex justify-end">
+                    <button type="submit" class="glass-btn flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Submit Report
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h2>My Reports</h2>
+    <div class="glass-card">
+        <div class="glass-header flex items-center gap-3">
+            <i class="fas fa-list text-indigo-600"></i> My Reports
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Ref No</th>
-                            <th>Flight</th>
-                            <th>Supervisor</th>
-                            <th>Total Attended</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for report in reports %}
-                        <tr>
-                            <td>{{ report.date }}</td>
-                            <td>{{ report.ref_no }}</td>
-                            <td>{{ report.flight_name }}</td>
-                            <td>{{ report.supervisor }}</td>
-                            <td>{{ report.total_attended }}</td>
-                            <td>
-                                {% if report.verified %}
-                                    <span class="badge bg-success">Verified</span>
-                                {% else %}
-                                    <span class="badge bg-warning">Pending</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if not report.verified and is_update_activated %}
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ report.id }}">
-                                    Edit
-                                </button>
-                                {% endif %}
-                            </td>
-                        </tr>
+        <div class="glass-body">
+            <div class="glass-table-wrapper">
+                <div class="overflow-x-auto">
+                    <table class="table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ref No</th>
+                                <th>Flight</th>
+                                <th>Supervisor</th>
+                                <th>Total Attended</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td class="font-medium">{{ report.date }}</td>
+                                <td>{{ report.ref_no }}</td>
+                                <td>{{ report.flight_name }}</td>
+                                <td>{{ report.supervisor }}</td>
+                                <td class="font-bold text-indigo-700">{{ report.total_attended }}</td>
+                                <td>
+                                    {% if report.verified %}
+                                        <span class="glass-badge badge-verified"><i class="fas fa-check"></i> Verified</span>
+                                    {% else %}
+                                        <span class="glass-badge badge-pending"><i class="fas fa-clock"></i> Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not report.verified and is_update_activated %}
+                                    <button type="button" class="glass-btn py-1 px-3 text-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ report.id }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
 
-                        <!-- Edit Modal -->
-                        <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Edit Report</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form method="POST" action="{{ url_for('team_lead.update_report', report_id=report.id) }}">
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Paid</label>
-                                                    <input type="number" name="paid" class="form-control" value="{{ report.paid }}">
+                            <!-- Edit Modal -->
+                            <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title font-bold text-xl"><i class="fas fa-edit text-indigo-600"></i> Edit Report</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body p-6">
+                                            <form method="POST" action="{{ url_for('team_lead.update_report', report_id=report.id) }}">
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                    <div>
+                                                        <label>Paid</label>
+                                                        <input type="number" name="paid" class="glass-input" value="{{ report.paid }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Diplomats</label>
+                                                        <input type="number" name="diplomats" class="glass-input" value="{{ report.diplomats }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Infants</label>
+                                                        <input type="number" name="infants" class="glass-input" value="{{ report.infants }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Not Paid</label>
+                                                        <input type="number" name="not_paid" class="glass-input" value="{{ report.not_paid }}">
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Diplomats</label>
-                                                    <input type="number" name="diplomats" class="form-control" value="{{ report.diplomats }}">
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                    <div>
+                                                        <label>Paid Card/QR</label>
+                                                        <input type="number" name="paid_card_qr" class="glass-input" value="{{ report.paid_card_qr }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Refunds</label>
+                                                        <input type="number" name="refunds" class="glass-input" value="{{ report.refunds }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Deportees</label>
+                                                        <input type="number" name="deportees" class="glass-input" value="{{ report.deportees }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Transit</label>
+                                                        <input type="number" name="transit" class="glass-input" value="{{ report.transit }}">
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Infants</label>
-                                                    <input type="number" name="infants" class="form-control" value="{{ report.infants }}">
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                                    <div>
+                                                        <label>Waivers</label>
+                                                        <input type="number" name="waivers" class="glass-input" value="{{ report.waivers }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Prepaid Bank</label>
+                                                        <input type="number" name="prepaid_bank" class="glass-input" value="{{ report.prepaid_bank }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Round Trip</label>
+                                                        <input type="number" name="round_trip" class="glass-input" value="{{ report.round_trip }}">
+                                                    </div>
+                                                    <div>
+                                                        <label>Late Payment</label>
+                                                        <input type="number" name="late_payment" class="glass-input" value="{{ report.late_payment }}">
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Not Paid</label>
-                                                    <input type="number" name="not_paid" class="form-control" value="{{ report.not_paid }}">
+                                                <div class="mb-6">
+                                                    <label>Remarks</label>
+                                                    <textarea name="remarks" class="glass-input" rows="3">{{ report.remarks }}</textarea>
                                                 </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Paid Card/QR</label>
-                                                    <input type="number" name="paid_card_qr" class="form-control" value="{{ report.paid_card_qr }}">
+                                                <div class="flex justify-end gap-3">
+                                                    <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="glass-btn"><i class="fas fa-save"></i> Save Changes</button>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Refunds</label>
-                                                    <input type="number" name="refunds" class="form-control" value="{{ report.refunds }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Deportees</label>
-                                                    <input type="number" name="deportees" class="form-control" value="{{ report.deportees }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Transit</label>
-                                                    <input type="number" name="transit" class="form-control" value="{{ report.transit }}">
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Waivers</label>
-                                                    <input type="number" name="waivers" class="form-control" value="{{ report.waivers }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Prepaid Bank</label>
-                                                    <input type="number" name="prepaid_bank" class="form-control" value="{{ report.prepaid_bank }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Round Trip</label>
-                                                    <input type="number" name="round_trip" class="form-control" value="{{ report.round_trip }}">
-                                                </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <label>Late Payment</label>
-                                                    <input type="number" name="late_payment" class="form-control" value="{{ report.late_payment }}">
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label>Remarks</label>
-                                                <textarea name="remarks" class="form-control">{{ report.remarks }}</textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Update Report</button>
-                                        </form>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% endfor %}
+                            {% if not reports %}
+                            <tr>
+                                <td colspan="7" class="text-center py-8 text-gray-500 italic">No reports found.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
