@@ -8,16 +8,27 @@ from extensions import db
 
 auth_bp = Blueprint('auth', __name__)
 
+def get_user_dashboard(user):
+    if user.role == 'admin':
+        return url_for('admin.dashboard')
+    elif user.role == 'teamLead':
+        return url_for('team_lead.dashboard')
+    elif user.role == 'dataAnalyst':
+        return url_for('data_analyst.dashboard')
+    elif user.role == 'cashController':
+        return url_for('cash_controller.dashboard')
+    return url_for('auth.login')
+
 @auth_bp.route('/')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('admin.dashboard'))
+        return redirect(get_user_dashboard(current_user))
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('admin.dashboard'))
+        return redirect(get_user_dashboard(current_user))
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -26,7 +37,7 @@ def login():
         if user and check_password_hash(user.password_hash, form.password.data) and user.active:
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('admin.dashboard'))
+            return redirect(next_page or get_user_dashboard(user))
         else:
             flash('Invalid credentials or user is deactivated. Please try again or contact Admin.', 'danger')
 
