@@ -52,7 +52,7 @@ def manage_users():
 def activate_user(user_id):
     user = User.query.get_or_404(user_id)
     user.active = True
-    current_app.db.session.commit()
+    db.session.commit()
     flash(f'User {user.username} has been activated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -64,7 +64,7 @@ def deactivate_user(user_id):
         flash('Cannot deactivate admin user.', 'danger')
     else:
         user.active = False
-        current_app.db.session.commit()
+        db.session.commit()
         flash(f'User {user.username} has been deactivated.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -75,8 +75,8 @@ def delete_user(user_id):
     if user.username == 'admin':
         flash('Cannot delete admin user.', 'danger')
     else:
-        current_app.db.session.delete(user)
-        current_app.db.session.commit()
+        db.session.delete(user)
+        db.session.commit()
         flash(f'User {user.username} has been deleted.', 'success')
     return redirect(url_for('admin.manage_users'))
 
@@ -90,7 +90,7 @@ def reset_password(user_id):
         flash('Password is required.', 'danger')
     else:
         user.password_hash = generate_password_hash(new_password)
-        current_app.db.session.commit()
+        db.session.commit()
         flash(f'Password for {user.username} has been reset.', 'success')
     
     return redirect(url_for('admin.manage_users'))
