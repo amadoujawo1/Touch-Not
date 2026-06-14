@@ -70,8 +70,8 @@ def setup_database(app):
     @app.errorhandler(500)
     def handle_db_error(e):
         return render_template('error.html', 
-                               error="Database Error", 
-                               message="There was a problem connecting to the database. Please check your database configuration."), 500
+                               error="Internal Server Error", 
+                               message=f"An error occurred: {str(e.original_exception if hasattr(e, 'original_exception') else e)}. Please check the server logs."), 500
 
     with app.app_context():
         try:
